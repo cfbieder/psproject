@@ -16,6 +16,7 @@ var mongoose = require("../components/node_modules/mongoose");
 const fs = require("fs");
 const path = require("path");
 const DataAnalyzerUtils = require("./dataAnalyzerUtils");
+const yahooExchangeRates = require("./yahooExchangeRates");
 
 // URL of MongoDB server
 var db = process.env.MONGO_URI;
@@ -69,26 +70,86 @@ async function main() {
   await DataAnalyzerUtils.writeAccountNamesFile(PSdata, ACCOUNT_NAMES_PATH);
   DataAnalyzerUtils.reportMissingAccounts(ACCOUNT_NAMES_PATH, COA_PATH);
   DataAnalyzerUtils.reportUnknownCoaAccounts(ACCOUNT_NAMES_PATH, COA_PATH);
-  getAccountRecordWithHighestId({ Account: "Fidelity Cash Mgt" }).then(
-    (record) => {
-      const formattedBalance = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(record.ClosingBalance);
-      console.log(
-        "[DA] Balance of %s ID for %s: ",
-        formattedBalance,
-        record.Account
-      );
-    }
+
+  //const asOfDate = new Date("2024-12-31");
+  const asOfDate = new Date(); // set to today's date if you want current date
+  console.log("[DA] As of Date: %s", asOfDate.toISOString());
+  const exchangeOptions = { date: asOfDate };
+  const baseCurrency =
+    process.env.EXCHANGE_BASE_CURRENCY || process.env.BASE_CURRENCY;
+  const quoteCurrency =
+    process.env.EXCHANGE_QUOTE_CURRENCY || process.env.QUOTE_CURRENCY;
+  if (baseCurrency) {
+    exchangeOptions.baseCurrency = baseCurrency;
+  }
+  if (quoteCurrency) {
+    exchangeOptions.quoteCurrency = quoteCurrency;
+  }
+  try {
+    const exchangeRate = await yahooExchangeRates.getExchangeRate(
+      exchangeOptions
+    );
+    console.log(
+      "[DA] %s/%s rate on %s: %d",
+      exchangeRate.baseCurrency,
+      exchangeRate.quoteCurrency,
+      exchangeRate.date.toISOString(),
+      exchangeRate.rate
+    );
+  } catch (err) {
+    console.error(
+      "[DA] Unable to fetch exchange rate for %s: %s",
+      asOfDate.toISOString(),
+      err.message
+    );
+  }
+  const accountFileContents = await fs.promises.readFile(
+    ACCOUNT_NAMES_PATH,
+    "utf8"
+  );
+  const parsedAccounts = JSON.parse(accountFileContents);
+  const accountNames = Array.isArray(parsedAccounts)
+    ? parsedAccounts
+    : Object.keys(parsedAccounts);
+
+  await Promise.all(
+    accountNames.map((accountName) =>
+      logAccountBalanceAsOf(accountName, asOfDate)
+    )
+  );
+}
+
+async function logAccountBalanceAsOf(accountName, asOfDate) {
+  const record = await getAccountRecordWithHighestId({
+    Account: accountName,
+    Date: asOfDate,
+  });
+
+  if (!record) {
+    console.log("[DA] No records found for %s", accountName);
+    return;
+  }
+
+  const currency =
+    typeof record.Currency === "string" && record.Currency.trim()
+      ? record.Currency.trim().toUpperCase()
+      : "USD";
+  const formattedBalance = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(record.ClosingBalance);
+
+  console.log(
+    "[DA] Balance of %s ID for %s: ",
+    formattedBalance,
+    record.Account
   );
 }
 
 main();
 
-//Function to get the record with the highest numeric ID for a given account
 async function getAccountRecordWithHighestId(accountFilter) {
   const accountName =
     typeof accountFilter === "string"
@@ -103,24 +164,32 @@ async function getAccountRecordWithHighestId(accountFilter) {
     );
   }
 
-  const [record] = await PSdata.aggregate([
-    { $match: { Account: accountName } },
-    {
-      $addFields: {
-        __numericId: {
-          $convert: {
-            input: "$ID",
-            to: "double",
-            onError: Number.MIN_SAFE_INTEGER,
-            onNull: Number.MIN_SAFE_INTEGER,
-          },
-        },
-      },
-    },
-    { $sort: { __numericId: -1 } },
-    { $limit: 1 },
-    { $project: { __numericId: 0 } },
-  ]).exec();
+  const rawDate =
+    accountFilter &&
+    typeof accountFilter === "object" &&
+    (accountFilter.Date ||
+      accountFilter.date ||
+      accountFilter.AsOfDate ||
+      accountFilter.asOfDate);
+  let asOfDate = null;
+  if (rawDate) {
+    asOfDate = rawDate instanceof Date ? rawDate : new Date(rawDate);
+    if (Number.isNaN(asOfDate.getTime())) {
+      throw new Error("Invalid date provided.");
+    }
+  } else {
+    asOfDate = new Date();
+  }
+
+  const matchStage = { Account: accountName };
+  if (asOfDate) {
+    matchStage.Date = { $lte: asOfDate };
+  }
+
+  const record = await PSdata.findOne(matchStage)
+    .sort({ Date: -1, _id: -1 })
+    .lean()
+    .exec();
 
   return record || null;
 }

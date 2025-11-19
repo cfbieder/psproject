@@ -103,15 +103,18 @@ async function main() {
       err.message
     );
   }
+  // Read account names from file
   const accountFileContents = await fs.promises.readFile(
     ACCOUNT_NAMES_PATH,
     "utf8"
   );
+  // Parse account names
   const parsedAccounts = JSON.parse(accountFileContents);
   const accountNames = Array.isArray(parsedAccounts)
     ? parsedAccounts
     : Object.keys(parsedAccounts);
 
+  // Log balances for each account
   await Promise.all(
     accountNames.map((accountName) =>
       logAccountBalanceAsOf(accountName, asOfDate)
@@ -119,6 +122,7 @@ async function main() {
   );
 }
 
+// Function to log the account balance as of a specific date
 async function logAccountBalanceAsOf(accountName, asOfDate) {
   const record = await getAccountRecordWithHighestId({
     Account: accountName,
@@ -148,8 +152,7 @@ async function logAccountBalanceAsOf(accountName, asOfDate) {
   );
 }
 
-main();
-
+// Function to get the account record with the highest ID for a given account and optional date filter
 async function getAccountRecordWithHighestId(accountFilter) {
   const accountName =
     typeof accountFilter === "string"
@@ -158,12 +161,13 @@ async function getAccountRecordWithHighestId(accountFilter) {
       ? accountFilter.Account.trim()
       : "";
 
+  // Validate account name
   if (!accountName) {
     throw new Error(
       "Account is required to find the record with the highest ID."
     );
   }
-
+  // Extract date filter if provided
   const rawDate =
     accountFilter &&
     typeof accountFilter === "object" &&
@@ -180,12 +184,12 @@ async function getAccountRecordWithHighestId(accountFilter) {
   } else {
     asOfDate = new Date();
   }
-
+  // Build the match stage for the query
   const matchStage = { Account: accountName };
   if (asOfDate) {
     matchStage.Date = { $lte: asOfDate };
   }
-
+  // Query the database for the record with the highest date and _id
   const record = await PSdata.findOne(matchStage)
     .sort({ Date: -1, _id: -1 })
     .lean()
@@ -193,3 +197,5 @@ async function getAccountRecordWithHighestId(accountFilter) {
 
   return record || null;
 }
+
+main();

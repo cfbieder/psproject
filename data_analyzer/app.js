@@ -16,18 +16,24 @@ var mongoose = require("../components/node_modules/mongoose");
 const fs = require("fs");
 const path = require("path");
 const DataAnalyzerUtils = require("./dataAnalyzerUtils");
-const yahooExchangeRates = require("./yahooExchangeRates");
+const BalanceSheetFetcher = require("./BalanceSheetFetcher");
 
 // URL of MongoDB server
 var db = process.env.MONGO_URI;
 console.log("[DA] Mongo URI: ", db);
 
-//Data file paths
-const ACCOUNT_NAMES_PATH = path.join(
-  __dirname,
-  "../components/data/account_names.json"
+// File paths for account names and COA
+const ACCOUNT_NAMES_PATH =
+  process.env.ACCOUNT_NAMES_PATH ||
+  path.join(__dirname, "../components/data/account_names.json");
+const COA_PATH =
+  process.env.COA_PATH || path.join(__dirname, "../components/data/coa.json");
+
+console.log(
+  "[DA] Setting up file paths...",
+  process.env.ACCOUNT_NAMES_PATH,
+  process.env.COA_PATH
 );
-const COA_PATH = path.join(__dirname, "../components/data/coa.json");
 
 //Models
 const PSdata = require("../components/models/PSdata");
@@ -39,9 +45,10 @@ const gateway = new DataGateway();
 //CSV Ingestor
 const PsCsvIngestor = require("./psCsvIngestor");
 const psCsvIngestor = new PsCsvIngestor({ gateway });
+const balanceSheetFetcher = new BalanceSheetFetcher();
 
-//Mock function used for testing
-async function process_incoming_test() {
+// Test function to check loading data from database
+async function check_load_database() {
   var items = await gateway.PSdata_ReadAll();
   console.log(`[DA] TESTING!!! Receive items: ${items.length}`);
 }
@@ -63,10 +70,19 @@ async function startMongoose() {
     });
 }
 
+/****************************************************************************
+ * Main Function
+ ****************************************************************************/
 async function main() {
   await startMongoose();
+  //uncomment to ingest CSV data
   //await psCsvIngestor.ingestPsTransactionsFromCsv();
-  await process_incoming_test();
+  //
+
+  // Run test processing function
+  await check_load_database();
+
+  // Write account names file and report missing/unknown accounts
   await DataAnalyzerUtils.writeAccountNamesFile(PSdata, ACCOUNT_NAMES_PATH);
   DataAnalyzerUtils.reportMissingAccounts(ACCOUNT_NAMES_PATH, COA_PATH);
   DataAnalyzerUtils.reportUnknownCoaAccounts(ACCOUNT_NAMES_PATH, COA_PATH);
@@ -74,128 +90,15 @@ async function main() {
   //const asOfDate = new Date("2024-12-31");
   const asOfDate = new Date(); // set to today's date if you want current date
   console.log("[DA] As of Date: %s", asOfDate.toISOString());
-  const exchangeOptions = { date: asOfDate };
-  const baseCurrency =
-    process.env.EXCHANGE_BASE_CURRENCY || process.env.BASE_CURRENCY;
-  const quoteCurrency =
-    process.env.EXCHANGE_QUOTE_CURRENCY || process.env.QUOTE_CURRENCY;
-  if (baseCurrency) {
-    exchangeOptions.baseCurrency = baseCurrency;
-  }
-  if (quoteCurrency) {
-    exchangeOptions.quoteCurrency = quoteCurrency;
-  }
-  try {
-    const exchangeRate = await yahooExchangeRates.getExchangeRate(
-      exchangeOptions
-    );
-    console.log(
-      "[DA] %s/%s rate on %s: %d",
-      exchangeRate.baseCurrency,
-      exchangeRate.quoteCurrency,
-      exchangeRate.date.toISOString(),
-      exchangeRate.rate
-    );
-  } catch (err) {
-    console.error(
-      "[DA] Unable to fetch exchange rate for %s: %s",
-      asOfDate.toISOString(),
-      err.message
-    );
-  }
-  // Read account names from file
-  const accountFileContents = await fs.promises.readFile(
+
+  // Build Balance Sheet Report
+  const balanceSheetReport = await balanceSheetFetcher.buildBalanceSheetReport(
+    COA_PATH,
     ACCOUNT_NAMES_PATH,
-    "utf8"
+    asOfDate,
+    true
   );
-  // Parse account names
-  const parsedAccounts = JSON.parse(accountFileContents);
-  const accountNames = Array.isArray(parsedAccounts)
-    ? parsedAccounts
-    : Object.keys(parsedAccounts);
-
-  // Log balances for each account
-  await Promise.all(
-    accountNames.map((accountName) =>
-      logAccountBalanceAsOf(accountName, asOfDate)
-    )
-  );
-}
-
-// Function to log the account balance as of a specific date
-async function logAccountBalanceAsOf(accountName, asOfDate) {
-  const record = await getAccountRecordWithHighestId({
-    Account: accountName,
-    Date: asOfDate,
-  });
-
-  if (!record) {
-    console.log("[DA] No records found for %s", accountName);
-    return;
-  }
-
-  const currency =
-    typeof record.Currency === "string" && record.Currency.trim()
-      ? record.Currency.trim().toUpperCase()
-      : "USD";
-  const formattedBalance = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(record.ClosingBalance);
-
-  console.log(
-    "[DA] Balance of %s ID for %s: ",
-    formattedBalance,
-    record.Account
-  );
-}
-
-// Function to get the account record with the highest ID for a given account and optional date filter
-async function getAccountRecordWithHighestId(accountFilter) {
-  const accountName =
-    typeof accountFilter === "string"
-      ? accountFilter.trim()
-      : accountFilter && typeof accountFilter.Account === "string"
-      ? accountFilter.Account.trim()
-      : "";
-
-  // Validate account name
-  if (!accountName) {
-    throw new Error(
-      "Account is required to find the record with the highest ID."
-    );
-  }
-  // Extract date filter if provided
-  const rawDate =
-    accountFilter &&
-    typeof accountFilter === "object" &&
-    (accountFilter.Date ||
-      accountFilter.date ||
-      accountFilter.AsOfDate ||
-      accountFilter.asOfDate);
-  let asOfDate = null;
-  if (rawDate) {
-    asOfDate = rawDate instanceof Date ? rawDate : new Date(rawDate);
-    if (Number.isNaN(asOfDate.getTime())) {
-      throw new Error("Invalid date provided.");
-    }
-  } else {
-    asOfDate = new Date();
-  }
-  // Build the match stage for the query
-  const matchStage = { Account: accountName };
-  if (asOfDate) {
-    matchStage.Date = { $lte: asOfDate };
-  }
-  // Query the database for the record with the highest date and _id
-  const record = await PSdata.findOne(matchStage)
-    .sort({ Date: -1, _id: -1 })
-    .lean()
-    .exec();
-
-  return record || null;
+  console.log("[DA] Balance Sheet report generated.");
 }
 
 main();

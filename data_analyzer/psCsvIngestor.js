@@ -1,3 +1,14 @@
+/******************************************************************************************************
+ * PocketSmith CSV Ingestor
+ * Chris Biedermann
+ * V1.0
+ * November 2025
+ * Primaryly calls
+ *   (1)Ingest PS transactions from CSV file into MongoDB
+ *      -psCsvIngestor.ingestPsTransactionsFromCsv()
+ *   (2) Helpers to parse CSV lines and build PSdata records
+ *******************************************************************************************************/
+
 const fs = require("fs");
 const path = require("path");
 const readline = require("readline");

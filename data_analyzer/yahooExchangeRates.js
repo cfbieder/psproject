@@ -1,3 +1,48 @@
+/******************************************************************************************************
+ * Yahoo Exchange Rate Fetcher
+ * Chris Biedermann
+ * V1.0
+ * November 2025
+ * Primary Functions:
+ *  - getExchangeRate(baseCurrency, quoteCurrency, asOfDate)
+ *  - getExchangeRateDetails({ baseCurrency, quoteCurrency, date })
+ * Description:
+ *  This module fetches historical exchange rates from Yahoo Finance.
+ *
+ * Usage:
+ *  const yahooExchangeRates = require('./yahooExchangeRates');
+ *  const rate = await yahooExchangeRates.getExchangeRate('USD', 'EUR', '2023-01-01');
+ *
+ *
+ *
+ * Functions:
+ *
+ * - getExchangeRate(baseCurrency, quoteCurrency, asOfDate):
+ *    Fetches the exchange rate between two currencies on a specific date.
+ *   Parameters:
+ *    - baseCurrency (string): The base currency code (e.g., 'USD').
+ *
+ *  - quoteCurrency (string): The quote currency code (e.g., 'EUR').
+ *   - asOfDate (string|Date): The date for which to fetch the exchange rate.
+ *  Returns:
+ *   - (number|null): The exchange rate or null if not found.
+ * Errors:
+ *  - Returns null if the exchange rate cannot be fetched.
+ *
+ *
+ * - getExchangeRateDetails({ baseCurrency, quoteCurrency, date }):
+ *   Fetches detailed exchange rate information.
+ *  Parameters:
+ *   - baseCurrency (string): The base currency code (default 'USD').
+ *  - quoteCurrency (string): The quote currency code (default 'EUR').
+ *  - date (string|Date): The date for which to fetch the exchange rate (default current date).
+ * Returns:
+ *  - (object): An object containing symbol, baseCurrency, quoteCurrency, date, and rate.
+ * Errors:
+ *  - Throws errors for invalid parameters or if no data is found.
+ *
+ *******************************************************************************************************/
+
 const https = require("https");
 
 const DAY_IN_SECONDS = 24 * 60 * 60;
@@ -31,15 +76,15 @@ const DEFAULT_USER_AGENT =
 function fetchJson(url) {
   const headers = {
     "User-Agent":
-      process.env.YAHOO_API_USER_AGENT || process.env.HTTP_USER_AGENT || DEFAULT_USER_AGENT,
+      process.env.YAHOO_API_USER_AGENT ||
+      process.env.HTTP_USER_AGENT ||
+      DEFAULT_USER_AGENT,
   };
   return new Promise((resolve, reject) => {
     https
       .get(url, { headers }, (res) => {
         if (res.statusCode !== 200) {
-          reject(
-            new Error(`Yahoo API request failed with ${res.statusCode}`)
-          );
+          reject(new Error(`Yahoo API request failed with ${res.statusCode}`));
           res.resume();
           return;
         }
@@ -60,7 +105,7 @@ function fetchJson(url) {
   });
 }
 
-async function getExchangeRate({
+async function fetchExchangeRateDetails({
   baseCurrency = "USD",
   quoteCurrency = "EUR",
   date = new Date(),
@@ -86,6 +131,23 @@ async function getExchangeRate({
   };
 }
 
+async function getExchangeRate(baseCurrency, quoteCurrency, asOfDate) {
+  const exchangeOptions = { date: asOfDate };
+  if (baseCurrency) {
+    exchangeOptions.baseCurrency = baseCurrency;
+  }
+  if (quoteCurrency) {
+    exchangeOptions.quoteCurrency = quoteCurrency;
+  }
+  try {
+    const exchangeRate = await fetchExchangeRateDetails(exchangeOptions);
+    return typeof exchangeRate.rate === "number" ? exchangeRate.rate : null;
+  } catch (err) {
+    return null;
+  }
+}
+
 module.exports = {
   getExchangeRate,
+  getExchangeRateDetails: fetchExchangeRateDetails,
 };

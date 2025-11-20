@@ -1,6 +1,32 @@
+/******************************************************************************************************
+ * Data Analyzer Utilities
+ * Chris Biedermann
+ * V1.0
+ * November 2025
+ * Primaryly calls
+ * (1)  for checking integrity between account names and COA files
+ *      reportMissingAccounts({filePath for account names}, {filePath for COA}), reportUnknownCoaAccounts({filePath for account names}, {filePath for COA})
+ * (2)  for writing unique account names from the psModel to a JSON file
+ *      writeAccountNamesFile({psModel}, {outputPath})
+ * (3)  helper function for reading and parsing a JSON file from the given path
+ *      readJson({filePath})
+ * (4)  helper function for getting a USD currency formatter
+ *      getUsdCurrencyFormatter()
+ *******************************************************************************************************/
+
 const fs = require("fs");
 
+// USD Currency Formatter
+const usdCurrencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+// Utility class for checking integrity between account names and COA files
 class DataAnalyzerUtils {
+  // Writes unique account names from the psModel to a JSON file
   static async writeAccountNamesFile(psModel, outputPath) {
     if (!psModel || typeof psModel.distinct !== "function") {
       throw new TypeError("psModel with a distinct function is required");
@@ -21,10 +47,12 @@ class DataAnalyzerUtils {
     console.log("[DA] Account names saved to %s", outputPath);
   }
 
+  // Reads and parses a JSON file from the given path
   static readJson(filePath) {
     return JSON.parse(fs.readFileSync(filePath, "utf8"));
   }
 
+  // Helper function that recursively collects unique strings from a nested structure
   static collectCoaStrings(root, includeFn) {
     if (!root) {
       return new Set();
@@ -63,6 +91,7 @@ class DataAnalyzerUtils {
     return results;
   }
 
+  // Reports account names that are missing from the COA file
   static reportMissingAccounts(accountNamesPath, coaPath) {
     const accountNamesData = this.readJson(accountNamesPath);
     const coaData = this.readJson(coaPath);
@@ -86,6 +115,7 @@ class DataAnalyzerUtils {
     }
   }
 
+  // Reports COA accounts that are unknown in the account names file
   static reportUnknownCoaAccounts(accountNamesPath, coaPath) {
     const accountNamesData = this.readJson(accountNamesPath);
     const knownAccounts = new Set(
@@ -100,10 +130,7 @@ class DataAnalyzerUtils {
         (item) =>
           item &&
           typeof item === "object" &&
-          Object.prototype.hasOwnProperty.call(
-            item,
-            "Balance Sheet Accounts"
-          )
+          Object.prototype.hasOwnProperty.call(item, "Balance Sheet Accounts")
       );
 
     if (!balanceSheetEntry) {
@@ -126,6 +153,10 @@ class DataAnalyzerUtils {
     } else {
       console.log("[DA] All COA accounts exist in account_names.json");
     }
+  }
+
+  static getUsdCurrencyFormatter() {
+    return usdCurrencyFormatter;
   }
 }
 

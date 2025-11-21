@@ -3,6 +3,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 
 const healthRouter = require("./routes/health");
+const balanceRouter = require("./routes/balance");
 const app = express();
 
 app.use(morgan("tiny"));
@@ -10,12 +11,13 @@ app.use(express.json());
 app.use(cors({ origin: true, credentials: true }));
 
 app.use("/api/health", healthRouter);
+app.use("/api/balance", balanceRouter);
 
 app.get("/", (req, res) => {
   res.json({
     service: "fin-server",
     status: "running",
-    routes: ["/api/health"],
+    routes: ["/api/health", "/api/balance"],
   });
 });
 

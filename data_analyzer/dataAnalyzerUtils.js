@@ -104,15 +104,11 @@ class DataAnalyzerUtils {
       }
     }
 
-    if (missing.length) {
-      console.warn(
-        "[DA] Accounts missing from COA (%d): %s",
-        missing.length,
-        missing.join(", ")
-      );
-    } else {
-      console.log("[DA] All account names exist in the COA file");
-    }
+    return {
+      missingAccounts: missing,
+      missingCount: missing.length,
+      status: missing.length ? "missing" : "ok",
+    };
   }
 
   // Reports COA accounts that are unknown in the account names file
@@ -134,8 +130,11 @@ class DataAnalyzerUtils {
       );
 
     if (!balanceSheetEntry) {
-      console.warn("[DA] Balance Sheet Accounts not found in COA file");
-      return;
+      return {
+        status: "balance_sheet_missing",
+        unknownAccounts: [],
+        unknownCount: 0,
+      };
     }
 
     const balanceSheetData = balanceSheetEntry["Balance Sheet Accounts"];
@@ -144,15 +143,12 @@ class DataAnalyzerUtils {
       (name) => !knownAccounts.has(name)
     );
 
-    if (unknownAccounts.size) {
-      console.warn(
-        "[DA] Accounts in COA but missing from account_names (%d): %s",
-        unknownAccounts.size,
-        Array.from(unknownAccounts).join(", ")
-      );
-    } else {
-      console.log("[DA] All COA accounts exist in account_names.json");
-    }
+    const accounts = Array.from(unknownAccounts);
+    return {
+      status: "ok",
+      unknownAccounts: accounts,
+      unknownCount: accounts.length,
+    };
   }
 
   static getUsdCurrencyFormatter() {

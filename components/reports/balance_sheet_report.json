@@ -2,11 +2,11 @@
   "Balance Sheet Accounts": [
     {
       "name": "Assets",
-      "totalUSD": 17037578.630948704,
+      "totalUSD": 16726126.688600425,
       "children": [
         {
           "name": "USD Bank Accounts",
-          "totalUSD": 43191.14,
+          "totalUSD": 53191.14000000001,
           "children": [
             {
               "name": "PKO - USD",
@@ -18,7 +18,7 @@
             },
             {
               "name": "Chase Checking",
-              "totalUSD": 12124.59
+              "totalUSD": 22124.59
             },
             {
               "name": "Chase Saving",
@@ -40,19 +40,19 @@
         },
         {
           "name": "EUR Bank Accounts",
-          "totalUSD": 27397.187293828847,
+          "totalUSD": 23764.32,
           "children": [
             {
               "name": "PKO EUR",
-              "totalUSD": 42.07977910686074
+              "totalUSD": 36.5
             },
             {
               "name": "WISE - EUR",
-              "totalUSD": 686.8342246768042
+              "totalUSD": 595.76
             },
             {
               "name": "Caixa EUR",
-              "totalUSD": 25359.21171250386
+              "totalUSD": 21996.58
             },
             {
               "name": "Cash EUR",
@@ -60,21 +60,21 @@
             },
             {
               "name": "Revolut-EUR",
-              "totalUSD": 1309.0615775413214
+              "totalUSD": 1135.48
             }
           ]
         },
         {
           "name": "PLN Bank Accounts",
-          "totalUSD": 313823.9970469033,
+          "totalUSD": 313354.6103752303,
           "children": [
             {
               "name": "PKO",
-              "totalUSD": 14524.964184125165
+              "totalUSD": 14503.23918967378
             },
             {
               "name": "PKO Savings",
-              "totalUSD": 38707.16744703099
+              "totalUSD": 38649.273121967206
             },
             {
               "name": "WISE - PLN",
@@ -82,11 +82,11 @@
             },
             {
               "name": "PKO - Deposits",
-              "totalUSD": 258742.77515296135
+              "totalUSD": 258355.77348581247
             },
             {
               "name": "Santandar",
-              "totalUSD": 1849.0902627857608
+              "totalUSD": 1846.3245777768411
             },
             {
               "name": "Reolut-PLN",
@@ -118,11 +118,11 @@
         },
         {
           "name": "Fidelity Fixed Income",
-          "totalUSD": 1243825.6699999997,
+          "totalUSD": 1243825.67,
           "children": [
             {
               "name": "Fidelity Cash Mgt",
-              "totalUSD": 558815.45
+              "totalUSD": 558709.34
             },
             {
               "name": "Fidelity Bond",
@@ -130,21 +130,21 @@
             },
             {
               "name": "Fidelity Fixed Income",
-              "totalUSD": -106.11
+              "totalUSD": 0
             }
           ]
         },
         {
           "name": "CVC Investments",
-          "totalUSD": 793096.2618029972,
+          "totalUSD": 687931.69,
           "children": [
             {
               "name": "CVC Fund VIII",
-              "totalUSD": 619011.8121331831
+              "totalUSD": 536930.84
             },
             {
               "name": "CVC Fund IX",
-              "totalUSD": 174084.44966981406
+              "totalUSD": 151000.85
             },
             {
               "name": "CVC Investments",
@@ -172,15 +172,15 @@
         },
         {
           "name": "SP - Properties",
-          "totalUSD": 1481409.999984492,
+          "totalUSD": 1284975.02,
           "children": [
             {
               "name": "SP - Sea Senses",
-              "totalUSD": 447876.56701472326
+              "totalUSD": 388488.13
             },
             {
               "name": "SP - Panorama Mar 4",
-              "totalUSD": 547031.0988756354
+              "totalUSD": 474494.77
             },
             {
               "name": "SP - Properties",
@@ -188,21 +188,21 @@
             },
             {
               "name": "SP - Panorama Mar 6",
-              "totalUSD": 486502.3340941334
+              "totalUSD": 421992.12
             }
           ]
         },
         {
           "name": "PL Investments",
-          "totalUSD": 9362537.049819391,
+          "totalUSD": 9348533.499595113,
           "children": [
             {
               "name": "United Beverages",
-              "totalUSD": 8286577.825293525
+              "totalUSD": 8274183.587690363
             },
             {
               "name": "Barkeria Sp. z o.o.",
-              "totalUSD": 1067379.8588234256
+              "totalUSD": 1065783.3783628538
             },
             {
               "name": "PL Investments",
@@ -210,17 +210,17 @@
             },
             {
               "name": "OCME Sp. z o.o.",
-              "totalUSD": 8579.365702440296
+              "totalUSD": 8566.533541897992
             }
           ]
         },
         {
           "name": "PL - Properties",
-          "totalUSD": 1167737.585597908,
+          "totalUSD": 1165991.000047252,
           "children": [
             {
               "name": "PL - Niemena",
-              "totalUSD": 1167737.585597908
+              "totalUSD": 1165991.000047252
             },
             {
               "name": "PL - Properties",
@@ -244,11 +244,11 @@
         },
         {
           "name": "WISE - GBP",
-          "totalUSD": 4.819403183904889,
+          "totalUSD": 4.818582831340346,
           "children": [
             {
               "name": "WISE - GBP",
-              "totalUSD": 4.819403183904889
+              "totalUSD": 4.818582831340346
             }
           ]
         },
@@ -266,7 +266,7 @@
     },
     {
       "name": "Liabilities",
-      "totalUSD": -10228.708633856255,
+      "totalUSD": -10320.346315549468,
       "children": [
         {
           "name": "Tax Reserve - US",
@@ -308,7 +308,7 @@
         },
         {
           "name": "USD Credit Cards",
-          "totalUSD": -3922.4199999999996,
+          "totalUSD": -4023.4900000000002,
           "children": [
             {
               "name": "Marriot Visa",
@@ -316,7 +316,7 @@
             },
             {
               "name": "Amazon Visa",
-              "totalUSD": -416.02
+              "totalUSD": -443.06
             },
             {
               "name": "Bonvoy Amex Card",
@@ -324,7 +324,7 @@
             },
             {
               "name": "LUXURY CARD",
-              "totalUSD": -1924.44
+              "totalUSD": -1998.47
             },
             {
               "name": "Hilton Honors Card",
@@ -338,23 +338,23 @@
         },
         {
           "name": "PLN Credit Cards",
-          "totalUSD": -6306.288633856256,
+          "totalUSD": -6296.8563155494685,
           "children": [
             {
               "name": "PKO Visa Gold CB",
-              "totalUSD": -15.260376517705708
+              "totalUSD": -15.237551566747445
             },
             {
               "name": "PKO VISA Infinity CB",
-              "totalUSD": -3757.1711546982374
+              "totalUSD": -3751.55155237399
             },
             {
               "name": "PKO Visa Gold KB",
-              "totalUSD": -12.536768358200852
+              "totalUSD": -12.51801710900205
             },
             {
               "name": "PKO VISA Infinity KB",
-              "totalUSD": -2521.3203342821116
+              "totalUSD": -2517.549194499729
             }
           ]
         }

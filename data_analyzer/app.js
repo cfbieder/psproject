@@ -73,8 +73,13 @@ async function main() {
 
   // Write account names file and report missing/unknown accounts
   await DataAnalyzerUtils.writeAccountNamesFile(PSdata, accountNamesPath);
-  DataAnalyzerUtils.reportMissingAccounts(accountNamesPath, coaPath);
-  DataAnalyzerUtils.reportUnknownCoaAccounts(accountNamesPath, coaPath);
+  misAcct = DataAnalyzerUtils.reportMissingAccounts(accountNamesPath, coaPath);
+  console.log("[DA] Missing Accounts: ", misAcct);
+  missCOA = DataAnalyzerUtils.reportUnknownCoaAccounts(
+    accountNamesPath,
+    coaPath
+  );
+  console.log("[DA] Unknown COA Accounts: ", missCOA);
 
   //const asOfDate = new Date("2024-12-31");
   const asOfDate = new Date(); // set to today's date if you want current date

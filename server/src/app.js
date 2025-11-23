@@ -28,6 +28,7 @@ app.get("/", (req, res) => {
       "/api/balance",
       "/api/upload-ps",
       "/api/ingest-ps",
+      "/api/analyze-ps",
     ],
   });
 });

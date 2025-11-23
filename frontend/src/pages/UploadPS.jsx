@@ -14,6 +14,8 @@ export default function UploadPS() {
   const [clearStatus, setClearStatus] = useState(null);
   const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
   const [hasFileSelected, setHasFileSelected] = useState(false);
+  const [analyzeStatus, setAnalyzeStatus] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   //Handler Functions
 
@@ -35,13 +37,19 @@ export default function UploadPS() {
     });
 
     try {
-      const { insertedCount } = await Rest.fetchJson("/api/ingest-ps", {
+      const {
+        insertedCount = 0,
+        skippedCount = 0,
+        updatedCount = 0,
+      } = await Rest.fetchJson("/api/ingest-ps", {
         method: "POST",
       });
-      const count = Number(insertedCount ?? 0);
+      const inserted = Number(insertedCount) || 0;
+      const skipped = Number(skippedCount) || 0;
+      const updated = Number(updatedCount) || 0;
       setIngestStatus({
         type: "success",
-        message: `${count} PS transaction${count === 1 ? "" : "s"} ingested.`,
+        message: `PS ingest complete: ${inserted} inserted, ${updated} updated, ${skipped} skipped.`,
       });
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -100,6 +108,71 @@ export default function UploadPS() {
     setIsClearConfirmOpen(false);
   };
 
+  const handleAnalyzeClick = async () => {
+    if (isAnalyzing) {
+      return;
+    }
+
+    setAnalyzeStatus({
+      type: "info",
+      message: "Running PS analysis...",
+    });
+    setIsAnalyzing(true);
+
+    try {
+      const result = await Rest.fetchJson("/api/analyze-ps");
+      const missingData = result?.misAcct ?? {};
+      const unknownData = result?.missCOA ?? {};
+
+      const missingList = Array.isArray(missingData.missingAccounts)
+        ? missingData.missingAccounts.filter(
+            (item) => typeof item === "string" && item
+          )
+        : [];
+      const unknownList = Array.isArray(unknownData.unknownAccounts)
+        ? unknownData.unknownAccounts.filter(
+            (item) => typeof item === "string" && item
+          )
+        : [];
+      const missingCount =
+        Number.isFinite(missingData.missingCount) && missingData.missingCount >= 0
+          ? missingData.missingCount
+          : missingList.length;
+      const unknownCount =
+        Number.isFinite(unknownData.unknownCount) && unknownData.unknownCount >= 0
+          ? unknownData.unknownCount
+          : unknownList.length;
+
+      const details = [];
+      if (missingList.length) {
+        details.push(`Missing from COA: ${missingList.join(", ")}`);
+      }
+      if (unknownList.length) {
+        details.push(`Unrecognized COA accounts: ${unknownList.join(", ")}`);
+      }
+      if (
+        unknownList.length === 0 &&
+        unknownData.status &&
+        unknownData.status !== "ok"
+      ) {
+        details.push(`COA status: ${unknownData.status}`);
+      }
+
+      setAnalyzeStatus({
+        type: "success",
+        message: `Analysis complete: ${missingCount} missing in COA; ${unknownCount} unknown COA accounts.`,
+        details,
+      });
+    } catch (error) {
+      setAnalyzeStatus({
+        type: "error",
+        message: error?.message ?? "Failed to analyze PS data.",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   return (
     <div className="page-shell">
       <NavigationMenu />
@@ -135,6 +208,25 @@ export default function UploadPS() {
                 }`}
               >
                 {ingestStatus.message}
+              </li>
+            )}
+            {analyzeStatus?.message && (
+              <li>
+                <p
+                  className={`upload-feedback upload-feedback_${
+                    analyzeStatus.type ?? "info"
+                  }`}
+                >
+                  {analyzeStatus.message}
+                </p>
+                {Array.isArray(analyzeStatus.details) &&
+                  analyzeStatus.details.length > 0 && (
+                    <ul className="upload-feedback-details">
+                      {analyzeStatus.details.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  )}
               </li>
             )}
           </ul>
@@ -178,8 +270,13 @@ export default function UploadPS() {
             >
               {isUploading ? "Uploading..." : "Upload"}
             </button>
-            <button type="button" className="upload-submit">
-              Analyze
+            <button
+              type="button"
+              className="upload-submit"
+              onClick={handleAnalyzeClick}
+              disabled={isUploading || isClearing || isAnalyzing}
+            >
+              {isAnalyzing ? "Analyzing..." : "Analyze"}
             </button>
           </div>
         </section>

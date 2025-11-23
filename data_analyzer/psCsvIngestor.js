@@ -13,6 +13,7 @@ const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
 const { toNumber, toDate } = require("../components/helpers/utils");
+const PSdata = require("../components/models/PSdata");
 
 // PsCsvIngestor class for ingesting PS CSV data into MongoDB
 class PsCsvIngestor {
@@ -119,9 +120,10 @@ class PsCsvIngestor {
     let headers = null;
     let batch = [];
     const batchSize = 1000;
-    let insertedCount = 0;
+    let addedCount = 0;
+    let skippedCount = 0;
+    let updatedCount = 0;
 
-    //todo: modify ingesst below to check if record already exisits, if yes, skip, if no, insert, if exists but different, update.  Console log summary of added,skipped,updated records.
     console.log("[DA] Ingesting PS transactions from CSV:", this.csvPath);
     const flushBatch = async () => {
       if (!batch.length) {
@@ -129,9 +131,81 @@ class PsCsvIngestor {
         return;
       }
       try {
-        console.log("[DA] Inserting batch of", batch.length, "records");
-        const inserted = await this.gateway.PSdata_InsertMany(batch);
-        insertedCount += inserted.length || 0;
+        console.log("[DA] Processing batch of", batch.length, "records");
+        const ids = [];
+        for (const record of batch) {
+          if (record.ID) {
+            ids.push(record.ID);
+          }
+        }
+        const uniqueIds = Array.from(new Set(ids));
+        const existingDocs = uniqueIds.length
+          ? await PSdata.find({ ID: { $in: uniqueIds } }).lean()
+          : [];
+        const existingMap = new Map(
+          existingDocs.map((doc) => [doc.ID, doc])
+        );
+        const operations = [];
+        const pendingInserts = new Map();
+        let batchAdded = 0;
+        let batchUpdated = 0;
+        let batchSkipped = 0;
+        const isDifferent = (existing, incoming) => {
+          for (const key of Object.keys(incoming)) {
+            const existingVal = existing[key];
+            const incomingVal = incoming[key];
+            const left =
+              existingVal instanceof Date ? existingVal.getTime() : existingVal;
+            const right =
+              incomingVal instanceof Date ? incomingVal.getTime() : incomingVal;
+            if (left !== right) {
+              return true;
+            }
+          }
+          return false;
+        };
+        for (const record of batch) {
+          if (record.ID) {
+            const existing = existingMap.get(record.ID);
+            if (existing) {
+              if (!existing._id) {
+                const pendingIndex = pendingInserts.get(record.ID);
+                if (
+                  pendingIndex !== undefined &&
+                  isDifferent(existing, record)
+                ) {
+                  operations[pendingIndex].insertOne.document = record;
+                  existingMap.set(record.ID, record);
+                }
+                batchSkipped++;
+                continue;
+              }
+              if (isDifferent(existing, record)) {
+                operations.push({
+                  updateOne: {
+                    filter: { _id: existing._id },
+                    update: { $set: record },
+                  },
+                });
+                existingMap.set(record.ID, Object.assign({}, existing, record));
+                batchUpdated++;
+              } else {
+                batchSkipped++;
+              }
+              continue;
+            }
+            existingMap.set(record.ID, record);
+            pendingInserts.set(record.ID, operations.length);
+          }
+          operations.push({ insertOne: { document: record } });
+          batchAdded++;
+        }
+        if (operations.length) {
+          await PSdata.bulkWrite(operations, { ordered: false });
+        }
+        addedCount += batchAdded;
+        updatedCount += batchUpdated;
+        skippedCount += batchSkipped;
       } catch (err) {
         console.error("[DA] Failed to insert batch:", err.message);
       }
@@ -178,8 +252,17 @@ class PsCsvIngestor {
         );
       }
     }
-    console.log("[DA] Inserted %d PS transactions from CSV", insertedCount);
-    return insertedCount;
+    console.log(
+      "[DA] Added %d, Updated %d, Skipped %d PS transactions from CSV",
+      addedCount,
+      updatedCount,
+      skippedCount
+    );
+    return {
+      insertedCount: addedCount,
+      updatedCount,
+      skippedCount,
+    };
   }
 }
 

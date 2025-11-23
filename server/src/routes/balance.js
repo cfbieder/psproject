@@ -19,6 +19,7 @@ router.get("/", async (req, res) => {
     });
   }
 
+  console.log("As of date for balance report:", asOfDate);
   try {
     const report = await balanceSheetFetcher.buildBalanceSheetReport(
       asOfDate,

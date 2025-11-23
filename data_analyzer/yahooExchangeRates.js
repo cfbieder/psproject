@@ -141,8 +141,10 @@ async function getExchangeRate(baseCurrency, quoteCurrency, asOfDate) {
   }
   try {
     const exchangeRate = await fetchExchangeRateDetails(exchangeOptions);
+    console.log("FX fetch:", exchangeRate);
     return typeof exchangeRate.rate === "number" ? exchangeRate.rate : null;
   } catch (err) {
+    console.warn("Failed to fetch exchange rate:", err);
     return null;
   }
 }

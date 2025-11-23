@@ -2,7 +2,8 @@ import { useRef, useState } from "react";
 import NavigationMenu from "../components/NavigationMenu.jsx";
 import handleUpload from "../js/handleUpload.js";
 import Rest from "../js/rest.js";
-import ConfirmationDialog from "../ui/ConfirmationDialog.jsx";
+import UploadFeedback from "../ui/UploadFeedback.jsx";
+import UploadForm from "../ui/UploadForm.jsx";
 import "./PageLayout.css";
 
 export default function UploadPS() {
@@ -108,6 +109,7 @@ export default function UploadPS() {
     setIsClearConfirmOpen(false);
   };
 
+  // Handle analyzing PS data
   const handleAnalyzeClick = async () => {
     if (isAnalyzing) {
       return;
@@ -135,11 +137,13 @@ export default function UploadPS() {
           )
         : [];
       const missingCount =
-        Number.isFinite(missingData.missingCount) && missingData.missingCount >= 0
+        Number.isFinite(missingData.missingCount) &&
+        missingData.missingCount >= 0
           ? missingData.missingCount
           : missingList.length;
       const unknownCount =
-        Number.isFinite(unknownData.unknownCount) && unknownData.unknownCount >= 0
+        Number.isFinite(unknownData.unknownCount) &&
+        unknownData.unknownCount >= 0
           ? unknownData.unknownCount
           : unknownList.length;
 
@@ -181,105 +185,28 @@ export default function UploadPS() {
           <h1 className="page__title">Upload PS CSV Spreadsheet</h1>
           <p className="page__description">Upload Status</p>
           <ul className="upload-guidance">
-            {uploadStatus?.message && (
-              <li>
-                <p
-                  className={`upload-feedback upload-feedback_${
-                    uploadStatus.type ?? "info"
-                  }`}
-                >
-                  {uploadStatus.message}
-                </p>
-              </li>
-            )}
-            {clearStatus?.message && (
-              <li
-                className={`upload-feedback upload-feedback_${
-                  clearStatus.type ?? "info"
-                }`}
-              >
-                {clearStatus.message}
-              </li>
-            )}
-            {ingestStatus?.message && (
-              <li
-                className={`upload-feedback upload-feedback_${
-                  ingestStatus.type ?? "info"
-                }`}
-              >
-                {ingestStatus.message}
-              </li>
-            )}
-            {analyzeStatus?.message && (
-              <li>
-                <p
-                  className={`upload-feedback upload-feedback_${
-                    analyzeStatus.type ?? "info"
-                  }`}
-                >
-                  {analyzeStatus.message}
-                </p>
-                {Array.isArray(analyzeStatus.details) &&
-                  analyzeStatus.details.length > 0 && (
-                    <ul className="upload-feedback-details">
-                      {analyzeStatus.details.map((detail) => (
-                        <li key={detail}>{detail}</li>
-                      ))}
-                    </ul>
-                  )}
-              </li>
-            )}
+            <UploadFeedback
+              uploadStatus={uploadStatus}
+              clearStatus={clearStatus}
+              ingestStatus={ingestStatus}
+              analyzeStatus={analyzeStatus}
+            />
           </ul>
         </section>
-        <section className="upload-panel upload-form">
-          <div className="upload-form-field">
-            <label htmlFor="psFile">PS file</label>
-            <input
-              type="file"
-              id="psFile"
-              ref={fileInputRef}
-              accept=".csv,text/csv"
-              onChange={(event) =>
-                setHasFileSelected((event.target.files?.length ?? 0) > 0)
-              }
-            />
-          </div>
-          <div className="upload-actions">
-            <button
-              type="button"
-              className="upload-submit"
-              onClick={handleClearClick}
-              disabled={isUploading || isClearing}
-            >
-              {isClearing ? "Clearing..." : "Clear PS records"}
-            </button>
-            {isClearConfirmOpen && !isClearing && (
-              <ConfirmationDialog
-                message="This will permanently delete all imported PS records. Confirming will wipe every record from MongoDB."
-                onConfirm={handleClearConfirm}
-                onCancel={handleClearCancel}
-                confirmLabel="Confirm clear"
-                cancelLabel="Cancel"
-              />
-            )}
-            <button
-              type="button"
-              className="upload-submit"
-              onClick={handleUploadClick}
-              disabled={isUploading || isClearing || !hasFileSelected}
-            >
-              {isUploading ? "Uploading..." : "Upload"}
-            </button>
-            <button
-              type="button"
-              className="upload-submit"
-              onClick={handleAnalyzeClick}
-              disabled={isUploading || isClearing || isAnalyzing}
-            >
-              {isAnalyzing ? "Analyzing..." : "Analyze"}
-            </button>
-          </div>
-        </section>
+        <UploadForm
+          fileInputRef={fileInputRef}
+          setHasFileSelected={setHasFileSelected}
+          hasFileSelected={hasFileSelected}
+          handleClearClick={handleClearClick}
+          isUploading={isUploading}
+          isClearing={isClearing}
+          isClearConfirmOpen={isClearConfirmOpen}
+          handleClearConfirm={handleClearConfirm}
+          handleClearCancel={handleClearCancel}
+          handleUploadClick={handleUploadClick}
+          handleAnalyzeClick={handleAnalyzeClick}
+          isAnalyzing={isAnalyzing}
+        />
       </main>
     </div>
   );

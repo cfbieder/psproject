@@ -16,6 +16,9 @@
   grid-template-columns: minmax(0, 1fr) minmax(480px, 540px);
   gap: 2rem;
 }
+.balance-grid {
+  column-gap: 3rem;
+}
 .upload-grid {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: stretch;
@@ -57,7 +60,7 @@ body {
 
 .balance-content {
   flex: 1;
-  max-width: 520px;
+  width: 100%;
   padding-left: 0.5rem;
 }
 

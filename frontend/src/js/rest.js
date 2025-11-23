@@ -13,9 +13,7 @@ export default class Rest {
     const isJson = contentType.toLowerCase().includes("application/json");
 
     if (!response.ok) {
-      const payload = isJson
-        ? await response.json().catch(() => null)
-        : null;
+      const payload = isJson ? await response.json().catch(() => null) : null;
 
       let message = payload?.error || response.statusText;
 
@@ -46,9 +44,7 @@ export default class Rest {
 
   static async fetchBalanceReport(asOfDate) {
     const encodedDate = encodeURIComponent(asOfDate ?? "");
-    const report = await Rest.fetchJson(
-      `/api/balance?asOfDate=${encodedDate}`
-    );
+    const report = await Rest.fetchJson(`/api/balance?asOfDate=${encodedDate}`);
     return report?.["Balance Sheet Accounts"] ?? null;
   }
 }

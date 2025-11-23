@@ -72,25 +72,32 @@ async function main() {
   await check_load_database();
 
   // Write account names file and report missing/unknown accounts
-  await DataAnalyzerUtils.writeAccountNamesFile(PSdata, accountNamesPath);
-  misAcct = DataAnalyzerUtils.reportMissingAccounts(accountNamesPath, coaPath);
-  console.log("[DA] Missing Accounts: ", misAcct);
-  missCOA = DataAnalyzerUtils.reportUnknownCoaAccounts(
-    accountNamesPath,
-    coaPath
-  );
-  console.log("[DA] Unknown COA Accounts: ", missCOA);
+  //await DataAnalyzerUtils.writeAccountNamesFile(PSdata, accountNamesPath);
+  //misAcct = DataAnalyzerUtils.reportMissingAccounts(accountNamesPath, coaPath);
+  //console.log("[DA] Missing Accounts: ", misAcct);
+  //missCOA = DataAnalyzerUtils.reportUnknownCoaAccounts(
+  //  accountNamesPath,
+  //  coaPath
+  //);
+  //console.log("[DA] Unknown COA Accounts: ", missCOA);
 
-  //const asOfDate = new Date("2024-12-31");
-  const asOfDate = new Date(); // set to today's date if you want current date
+  const asOfDate = new Date("2025-11-01");
+  //const asOfDate = new Date(); // set to today's date if you want current date
+
+  const balance = await balanceSheetFetcher.getAccountBalanceAsOf(
+    "PKO - Deposits",
+    asOfDate
+  );
+  console.log("[DA] Account Balances %s:", balance["PKO - Deposits"]);
+
   console.log("[DA] As of Date: %s", asOfDate.toISOString());
 
   // Build Balance Sheet Report
-  const balanceSheetReport = await balanceSheetFetcher.buildBalanceSheetReport(
-    asOfDate,
-    true
-  );
-  console.log("[DA] Balance Sheet report generated.");
+  //const balanceSheetReport = await balanceSheetFetcher.buildBalanceSheetReport(
+  //  asOfDate,
+  //  true
+  //);
+  //console.log("[DA] Balance Sheet report generated.");
 }
 
 main();

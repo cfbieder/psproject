@@ -36,7 +36,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const yahooExchangeRates = require("./yahooExchangeRates");
+const frankfurterExchangeRates = require("./frankfurterExchangeRates");
 const getPsDataModel = () => require("../components/models/PSdata");
 const DataAnalyzerUtils = require("./dataAnalyzerUtils");
 
@@ -57,7 +57,8 @@ class BalanceSheetFetcher {
     coaPath,
   } = {}) {
     this.psDataModel = psDataModel || getPsDataModel();
-    this.exchangeRateProvider = exchangeRateProvider || yahooExchangeRates;
+    this.exchangeRateProvider =
+      exchangeRateProvider || frankfurterExchangeRates;
     this.accountNamesPath = accountNamesPath || DEFAULT_ACCOUNT_NAMES_PATH;
     this.coaPath = coaPath || DEFAULT_COA_PATH;
   }
@@ -159,6 +160,7 @@ class BalanceSheetFetcher {
         ? record.Currency.trim().toUpperCase()
         : "USD";
     const balance = Number(record.ClosingBalance) || 0;
+
     let exchangeRate =
       currency === "USD"
         ? 1
@@ -167,7 +169,6 @@ class BalanceSheetFetcher {
             currency,
             asOfDate
           );
-
     if (typeof exchangeRate !== "number" || exchangeRate <= 0) {
       exchangeRate = 1;
     }

@@ -6,22 +6,38 @@ import Rest from "../js/rest.js";
 import "./PageLayout.css";
 
 export default function Balance() {
-  const [selectedDate, setSelectedDate] = useState(() => {
+  const getToday = () => {
     const today = new Date();
     return today.toISOString().split("T")[0];
-  });
+  };
 
-  const [balanceReport, setBalanceReport] = useState(null);
+  const [periodDates, setPeriodDates] = useState(() => {
+    const today = getToday();
+    return [today, today, today];
+  });
+  const [periodCount, setPeriodCount] = useState(1);
+  const [balanceReports, setBalanceReports] = useState([]);
   const [reportError, setReportError] = useState("");
   const [isFetchingReport, setIsFetchingReport] = useState(false);
+
+  const handlePeriodDateChange = (index, value) => {
+    setPeriodDates((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  };
 
   const handleGenerateReport = async () => {
     setReportError("");
     setIsFetchingReport(true);
+    const activeCount = Math.min(Math.max(periodCount ?? 1, 1), 3);
+    const activeDates = periodDates.slice(0, activeCount);
     try {
-      const report = await Rest.fetchBalanceReport(selectedDate);
-      console.log("Balance report:", report);
-      setBalanceReport(report);
+      const reports = await Promise.all(
+        activeDates.map((date) => Rest.fetchBalanceReport(date))
+      );
+      setBalanceReports(reports);
     } catch (error) {
       console.error("Failed to fetch balance report:", error);
       setReportError(error?.message ?? "Failed to fetch balance report");
@@ -30,24 +46,29 @@ export default function Balance() {
     }
   };
 
+  const activePeriodCount = Math.min(Math.max(periodCount ?? 1, 1), 3);
+
   return (
     <div className="page-shell">
       <NavigationMenu />
       <main className="page-main balance-grid">
         <div className="balance-layout-wrapper">
           <BalanceReport
-            balanceReport={balanceReport}
-            selectedDate={selectedDate}
+            balanceReports={balanceReports}
+            periodDates={periodDates}
+            periodCount={activePeriodCount}
           />
         </div>
         <div className="balance-layout-holder">
           <BalanceDateSelector
-            selectedDate={selectedDate}
-            onDateChange={setSelectedDate}
+            periodDates={periodDates}
+            onPeriodDateChange={handlePeriodDateChange}
             onGenerateReport={handleGenerateReport}
             isLoading={isFetchingReport}
             error={reportError}
-            report={balanceReport}
+            report={balanceReports[0]}
+            periodCount={activePeriodCount}
+            onPeriodCountChange={setPeriodCount}
           />
         </div>
       </main>

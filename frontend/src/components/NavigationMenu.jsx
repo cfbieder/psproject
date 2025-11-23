@@ -3,10 +3,8 @@ import finIcon from "../assets/fin.png";
 import "./NavigationMenu.css";
 
 const menuItems = [
-  {
-    label: "File",
-    submenu: [{ label: "Upload PS", path: "/upload-ps" }],
-  },
+  { label: "Home", path: "/" },
+  { label: "File", submenu: [{ label: "Upload PS", path: "/upload-ps" }] },
   { label: "Dashboard" },
   {
     label: "Reports",
@@ -17,35 +15,68 @@ const menuItems = [
 
 export default function NavigationMenu() {
   return (
+    <div class="navbar">
+      {menuItems.map((item) =>
+        item.submenu ? (
+          <div key={item.label} className="dropdown">
+            <button className="dropbtn">
+              {item.label}
+              <i className="fa fa-caret-down"></i>
+            </button>
+            <div className="dropdown-content">
+              {item.submenu.map((subItem) => (
+                <Link key={subItem.label} to={subItem.path}>
+                  {subItem.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <Link key={item.label} className="navlink" to={item.path || "#"}>
+            {item.label}
+          </Link>
+        )
+      )}
+    </div>
+  );
+}
+/*
+export default function NavigationMenu() {
+  return (
     <header className="home__menu">
       <div className="home__menu-inner">
         <img src={finIcon} alt="Fin logo" className="home__menu-icon" />
-        <ul className="home__menu-list">
-          <li className="home__menu-item-wrapper">
-            <Link to="/" className="home__menu-item">
-              Home
-            </Link>
-          </li>
-          {menuItems.map((item) => (
-            <li key={item.label} className="home__menu-item-wrapper">
-              <button type="button" className="home__menu-item">
-                {item.label}
-              </button>
-              {item.submenu && (
-                <ul className="home__submenu">
+        <nav className="home__navbar">
+          <Link to="/" className="home__navlink">
+            Home
+          </Link>
+          {menuItems.map((item) =>
+            item.submenu ? (
+              <div key={item.label} className="home__dropdown">
+                <button type="button" className="home__dropbtn">
+                  {item.label}
+                </button>
+                <div className="home__dropdown-content">
                   {item.submenu.map((subItem) => (
-                    <li key={subItem.label}>
-                      <Link className="home__submenu-link" to={subItem.path}>
-                        {subItem.label}
-                      </Link>
-                    </li>
+                    <Link
+                      key={subItem.label}
+                      className="home__dropdown-link"
+                      to={subItem.path}
+                    >
+                      {subItem.label}
+                    </Link>
                   ))}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
+                </div>
+              </div>
+            ) : (
+              <span key={item.label} className="home__navlink home__navlink--static">
+                {item.label}
+              </span>
+            ),
+          )}
+        </nav>
       </div>
     </header>
   );
 }
+*/

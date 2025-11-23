@@ -3,7 +3,10 @@ import finIcon from "../assets/fin.png";
 import "./NavigationMenu.css";
 
 const menuItems = [
-  { label: "File" },
+  {
+    label: "File",
+    submenu: [{ label: "Upload PS", path: "/upload-ps" }],
+  },
   { label: "Dashboard" },
   {
     label: "Reports",
@@ -18,6 +21,11 @@ export default function NavigationMenu() {
       <div className="home__menu-inner">
         <img src={finIcon} alt="Fin logo" className="home__menu-icon" />
         <ul className="home__menu-list">
+          <li className="home__menu-item-wrapper">
+            <Link to="/" className="home__menu-item">
+              Home
+            </Link>
+          </li>
           {menuItems.map((item) => (
             <li key={item.label} className="home__menu-item-wrapper">
               <button type="button" className="home__menu-item">
@@ -41,5 +49,3 @@ export default function NavigationMenu() {
     </header>
   );
 }
-
-//todo: make menu items below main menu item drop down on hover

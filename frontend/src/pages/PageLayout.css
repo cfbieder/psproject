@@ -1,0 +1,245 @@
+.page-shell {
+  min-height: 100vh;
+  padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  justify-content: flex-start;
+  background: #544f82;
+}
+
+.page-main {
+  width: 100%;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(480px, 540px);
+  gap: 2rem;
+}
+.upload-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.page__title {
+  font-size: 2rem;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.page__description {
+  font-size: 1.25rem;
+  color: #e2e8f0;
+  text-align: center;
+  width: 100%;
+  max-width: 38rem;
+  margin-top: 0.75rem;
+}
+
+body {
+  margin: 0;
+  display: block;
+  background: #5f5d5d;
+}
+
+#root {
+  width: 100%;
+}
+
+.balance-layout-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-left: 1.5rem;
+}
+
+.balance-content {
+  flex: 1;
+  max-width: 520px;
+  padding-left: 0.5rem;
+}
+
+.balance-layout-holder {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 1.5rem;
+}
+
+.balance-report {
+  width: 100%;
+  margin-top: 1.25rem;
+}
+
+.balance-report__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.balance-report__title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #e2e8f0;
+}
+
+.balance-report__date {
+  font-size: 0.9rem;
+  color: #d5d5ff;
+  white-space: nowrap;
+}
+
+.balance-report-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(84, 79, 130, 0.45);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.25);
+}
+
+.balance-report-table th,
+.balance-report-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.18);
+  font-size: 0.95rem;
+}
+
+.balance-report-table th {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+  color: #a5b4fc;
+}
+
+.balance-report-table td {
+  color: #f8fafc;
+}
+
+.balance-report-table__name {
+  font-weight: 500;
+}
+
+.balance-report-table__value {
+  text-align: right;
+  font-family: "Roboto", system-ui, sans-serif;
+}
+
+.balance-report-table__value--negative {
+  color: #fb7185;
+}
+
+.balance-report-empty {
+  margin-top: 1.5rem;
+  color: #cbd5f5;
+  font-size: 0.95rem;
+}
+
+.upload-panel {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+}
+
+.upload-guidance {
+  margin: 1rem 0 0;
+  padding-left: 1rem;
+  color: #cbd5f5;
+  line-height: 1.6;
+}
+
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.upload-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.clear-confirmation {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: #ffe4e6;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: #fb7185;
+}
+
+.clear-confirmation__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.upload-submit_clear {
+  padding: 0.55rem 1rem;
+  font-size: 0.9rem;
+}
+
+.upload-submit_cancel {
+  padding: 0.55rem 1rem;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+  box-shadow: none;
+}
+
+.upload-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: #e2e8f0;
+}
+
+.upload-form-field input {
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid rgba(226, 232, 240, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f8fafc;
+}
+
+.upload-submit {
+  align-self: flex-start;
+  padding: 0.9rem 2rem;
+  border-radius: 0.75rem;
+  border: none;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  box-shadow: 0 10px 15px rgba(99, 102, 241, 0.4);
+  cursor: pointer;
+}
+
+.upload-submit:disabled {
+  background: #94a3b8;
+  color: #e2e8f0;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.upload-feedback {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #cbd5f5;
+}
+
+.upload-feedback_success {
+  color: #86efac;
+}
+
+.upload-feedback_error {
+  color: #fca5a5;
+}

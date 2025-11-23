@@ -13,27 +13,12 @@ console.log("[DA] mode: %s", mode);
 
 // Library for MongoDB
 var mongoose = require("../components/node_modules/mongoose");
-const fs = require("fs");
-const path = require("path");
 const DataAnalyzerUtils = require("./dataAnalyzerUtils");
 const BalanceSheetFetcher = require("./BalanceSheetFetcher");
 
 // URL of MongoDB server
 var db = process.env.MONGO_URI;
 console.log("[DA] Mongo URI: ", db);
-
-// File paths for account names and COA
-const ACCOUNT_NAMES_PATH =
-  process.env.ACCOUNT_NAMES_PATH ||
-  path.join(__dirname, "../components/data/account_names.json");
-const COA_PATH =
-  process.env.COA_PATH || path.join(__dirname, "../components/data/coa.json");
-
-console.log(
-  "[DA] Setting up file paths...",
-  process.env.ACCOUNT_NAMES_PATH,
-  process.env.COA_PATH
-);
 
 //Models
 const PSdata = require("../components/models/PSdata");
@@ -46,6 +31,10 @@ const gateway = new DataGateway();
 const PsCsvIngestor = require("./psCsvIngestor");
 const psCsvIngestor = new PsCsvIngestor({ gateway });
 const balanceSheetFetcher = new BalanceSheetFetcher();
+const accountNamesPath = balanceSheetFetcher.accountNamesPath;
+const coaPath = balanceSheetFetcher.coaPath;
+
+console.log("[DA] Using account/coa paths:", accountNamesPath, coaPath);
 
 // Test function to check loading data from database
 async function check_load_database() {
@@ -83,9 +72,9 @@ async function main() {
   await check_load_database();
 
   // Write account names file and report missing/unknown accounts
-  await DataAnalyzerUtils.writeAccountNamesFile(PSdata, ACCOUNT_NAMES_PATH);
-  DataAnalyzerUtils.reportMissingAccounts(ACCOUNT_NAMES_PATH, COA_PATH);
-  DataAnalyzerUtils.reportUnknownCoaAccounts(ACCOUNT_NAMES_PATH, COA_PATH);
+  await DataAnalyzerUtils.writeAccountNamesFile(PSdata, accountNamesPath);
+  DataAnalyzerUtils.reportMissingAccounts(accountNamesPath, coaPath);
+  DataAnalyzerUtils.reportUnknownCoaAccounts(accountNamesPath, coaPath);
 
   //const asOfDate = new Date("2024-12-31");
   const asOfDate = new Date(); // set to today's date if you want current date
@@ -93,8 +82,6 @@ async function main() {
 
   // Build Balance Sheet Report
   const balanceSheetReport = await balanceSheetFetcher.buildBalanceSheetReport(
-    COA_PATH,
-    ACCOUNT_NAMES_PATH,
     asOfDate,
     true
   );

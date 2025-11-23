@@ -1,0 +1,35 @@
+
+#force stop of mongo
+sudo systemctl stop mongod
+
+#start docker
+docker compose up -d
+docker compose up -d mongodb
+
+#run docker that is in container
+mongosh "mongodb://localhost:27017"
+
+#mongo commands
+db.psdata.countDocuments({})
+
+
+#build docker file
+docker build -f Dockerfile.server -t bookdb-server .
+docker run --rm -p 3001:5000 --name bookdb-api bookdb-server
+docker run --rm -d -p 3001:5000 --name bookdb-api bookdb-server
+docker stop bookdb-api
+
+
+#restore mogno backup
+docker exec -it mongodb bash -lc 'mongorestore --uri="mongodb://localhost:27017/?authSource=admin" --db books --drop /dump/books'
+docker exec -it mongodb bash -lc 'mongorestore --uri="mongodb://localhost:27017/" --db books --drop /dump/books'
+
+#backup mongo 
+docker exec mongodb mongodump --out /data/db/backups --db books --collection books --collection users
+
+
+
+#Linus process
+sudo netstat -tulpn | grep :27017
+sudo kill
+

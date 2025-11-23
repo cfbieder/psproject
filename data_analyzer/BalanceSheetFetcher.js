@@ -40,13 +40,26 @@ const yahooExchangeRates = require("./yahooExchangeRates");
 const getPsDataModel = () => require("../components/models/PSdata");
 const DataAnalyzerUtils = require("./dataAnalyzerUtils");
 
+const DEFAULT_ACCOUNT_NAMES_PATH =
+  process.env.ACCOUNT_NAMES_PATH ||
+  path.join(__dirname, "../components/data/account_names.json");
+const DEFAULT_COA_PATH =
+  process.env.COA_PATH || path.join(__dirname, "../components/data/coa.json");
+
 /**
  * Fetches balance sheet data for accounts as of a given date.
  */
 class BalanceSheetFetcher {
-  constructor({ psDataModel, exchangeRateProvider } = {}) {
+  constructor({
+    psDataModel,
+    exchangeRateProvider,
+    accountNamesPath,
+    coaPath,
+  } = {}) {
     this.psDataModel = psDataModel || getPsDataModel();
     this.exchangeRateProvider = exchangeRateProvider || yahooExchangeRates;
+    this.accountNamesPath = accountNamesPath || DEFAULT_ACCOUNT_NAMES_PATH;
+    this.coaPath = coaPath || DEFAULT_COA_PATH;
   }
 
   // Fetch account balances for given account data as of a specific date
@@ -68,14 +81,9 @@ class BalanceSheetFetcher {
   }
 
   // Build balance sheet report using COA structure and fetched balances
-  async buildBalanceSheetReport(
-    coaPath,
-    accountNamesPath,
-    asOfDate,
-    outputToFile = false
-  ) {
+  async buildBalanceSheetReport(asOfDate, outputToFile = false) {
     const accountBalances = await this.fetchAccountBalances(
-      accountNamesPath,
+      this.accountNamesPath,
       asOfDate
     );
 
@@ -83,7 +91,7 @@ class BalanceSheetFetcher {
       return {};
     }
 
-    const coaData = DataAnalyzerUtils.readJson(coaPath);
+    const coaData = DataAnalyzerUtils.readJson(this.coaPath);
     const balanceSheetEntry =
       Array.isArray(coaData) &&
       coaData.find(

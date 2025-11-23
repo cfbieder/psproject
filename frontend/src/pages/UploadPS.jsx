@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import NavigationMenu from "../components/NavigationMenu.jsx";
 import handleUpload from "../js/handleUpload.js";
 import Rest from "../js/rest.js";
+import ConfirmationDialog from "../ui/ConfirmationDialog.jsx";
 import "./PageLayout.css";
 
 export default function UploadPS() {
@@ -11,6 +12,8 @@ export default function UploadPS() {
   const [uploadStatus, setUploadStatus] = useState(null);
   const [ingestStatus, setIngestStatus] = useState(null);
   const [clearStatus, setClearStatus] = useState(null);
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
+  const [hasFileSelected, setHasFileSelected] = useState(false);
 
   //Handler Functions
 
@@ -40,6 +43,10 @@ export default function UploadPS() {
         type: "success",
         message: `${count} PS transaction${count === 1 ? "" : "s"} ingested.`,
       });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      setHasFileSelected(false);
     } catch (error) {
       setIngestStatus({
         type: "error",
@@ -47,16 +54,17 @@ export default function UploadPS() {
       });
     }
   };
-  // todo: remove IP address says from confirmation and status messages below
   // Handle clearing all PS records
-  const handleClearClick = async () => {
-    if (
-      !window.confirm(
-        "This will permanently delete all imported PS records. Do you want to continue?"
-      )
-    ) {
+  const handleClearClick = () => {
+    if (isClearing) {
       return;
     }
+    setIsClearConfirmOpen(true);
+  };
+
+  // Confirm clearing all PS records
+  const handleClearConfirm = async () => {
+    setIsClearConfirmOpen(false);
 
     setUploadStatus(null);
     setIngestStatus(null);
@@ -82,6 +90,14 @@ export default function UploadPS() {
     } finally {
       setIsClearing(false);
     }
+  };
+
+  // Cancel clearing all PS records
+  const handleClearCancel = () => {
+    if (isClearing) {
+      return;
+    }
+    setIsClearConfirmOpen(false);
   };
 
   return (
@@ -125,12 +141,15 @@ export default function UploadPS() {
         </section>
         <section className="upload-panel upload-form">
           <div className="upload-form-field">
-            <label htmlFor="payrollFile">Payroll file</label>
+            <label htmlFor="psFile">PS file</label>
             <input
               type="file"
-              id="payrollFile"
+              id="psFile"
               ref={fileInputRef}
               accept=".csv,text/csv"
+              onChange={(event) =>
+                setHasFileSelected((event.target.files?.length ?? 0) > 0)
+              }
             />
           </div>
           <div className="upload-actions">
@@ -142,11 +161,20 @@ export default function UploadPS() {
             >
               {isClearing ? "Clearing..." : "Clear PS records"}
             </button>
+            {isClearConfirmOpen && !isClearing && (
+              <ConfirmationDialog
+                message="This will permanently delete all imported PS records. Confirming will wipe every record from MongoDB."
+                onConfirm={handleClearConfirm}
+                onCancel={handleClearCancel}
+                confirmLabel="Confirm clear"
+                cancelLabel="Cancel"
+              />
+            )}
             <button
               type="button"
               className="upload-submit"
               onClick={handleUploadClick}
-              disabled={isUploading || isClearing}
+              disabled={isUploading || isClearing || !hasFileSelected}
             >
               {isUploading ? "Uploading..." : "Upload"}
             </button>

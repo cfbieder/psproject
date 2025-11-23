@@ -50,6 +50,20 @@ class PsCsvIngestor {
     return values;
   }
 
+  // Clear all PSdata records from MongoDB
+  async clearAllRecords() {
+    try {
+      console.log("[DA] Clearing existing PS data...");
+      ret = await this.gateway.PSdata_ClearAll();
+      console.log("[DA] Cleared existing PS data." + ret);
+    } catch (err) {
+      console.warn(
+        "[DA] Skipping PS data clear because it failed:",
+        err.message
+      );
+    }
+  }
+
   // Build PSdata record from CSV row
   buildPsRecord(row) {
     const record = {};
@@ -85,7 +99,7 @@ class PsCsvIngestor {
   async ingestPsTransactionsFromCsv() {
     if (!fs.existsSync(this.csvPath)) {
       console.warn("[DA] CSV file not found:", this.csvPath);
-      return;
+      return 0;
     }
 
     const stream = fs.createReadStream(this.csvPath, { encoding: "utf8" });
@@ -94,18 +108,28 @@ class PsCsvIngestor {
       crlfDelay: Infinity,
     });
 
+    const streamClosePromise = new Promise((resolve) => {
+      if (stream.closed || stream.destroyed) {
+        resolve();
+        return;
+      }
+      stream.once("close", resolve);
+    });
+
     let headers = null;
     let batch = [];
     const batchSize = 1000;
     let insertedCount = 0;
 
-    await this.gateway.PSdata_ClearAll();
-
+    //todo: modify ingesst below to check if record already exisits, if yes, skip, if no, insert, if exists but different, update.  Console log summary of added,skipped,updated records.
+    console.log("[DA] Ingesting PS transactions from CSV:", this.csvPath);
     const flushBatch = async () => {
       if (!batch.length) {
+        console.log("[DA] No records to insert in batch.");
         return;
       }
       try {
+        console.log("[DA] Inserting batch of", batch.length, "records");
         const inserted = await this.gateway.PSdata_InsertMany(batch);
         insertedCount += inserted.length || 0;
       } catch (err) {
@@ -113,37 +137,49 @@ class PsCsvIngestor {
       }
       batch = [];
     };
-
-    // Read and process CSV lines
-    for await (const rawLine of rl) {
-      const line = rawLine.replace(/\r$/, "");
-      if (!line.trim()) {
-        continue;
+    console.log("[DA] Reading CSV file line by line...");
+    try {
+      for await (const rawLine of rl) {
+        const line = rawLine.replace(/\r$/, "");
+        if (!line.trim()) {
+          continue;
+        }
+        const values = this.parseCsvLine(line);
+        if (!headers) {
+          headers = values;
+          continue;
+        }
+        if (values.length < headers.length) {
+          continue;
+        }
+        const row = {};
+        for (let i = 0; i < headers.length; i++) {
+          row[headers[i]] = values[i] ? values[i].trim() : "";
+        }
+        const record = this.buildPsRecord(row);
+        if (!record) {
+          continue;
+        }
+        batch.push(record);
+        if (batch.length >= batchSize) {
+          await flushBatch();
+        }
       }
-      const values = this.parseCsvLine(line);
-      if (!headers) {
-        headers = values;
-        continue;
-      }
-      if (values.length < headers.length) {
-        continue;
-      }
-      const row = {};
-      for (let i = 0; i < headers.length; i++) {
-        row[headers[i]] = values[i] ? values[i].trim() : "";
-      }
-      const record = this.buildPsRecord(row);
-      if (!record) {
-        continue;
-      }
-      batch.push(record);
-      if (batch.length >= batchSize) {
-        await flushBatch();
+      await flushBatch();
+    } finally {
+      rl.close();
+      await streamClosePromise;
+      console.log("[DA] CSV file stream closed.");
+      const isStreamClosed = stream.closed || stream.destroyed;
+      if (!isStreamClosed) {
+        console.warn(
+          "[DA] CSV file stream may not have closed cleanly:",
+          this.csvPath
+        );
       }
     }
-    // Flush any remaining records in the batch
-    await flushBatch();
     console.log("[DA] Inserted %d PS transactions from CSV", insertedCount);
+    return insertedCount;
   }
 }
 

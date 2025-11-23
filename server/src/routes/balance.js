@@ -1,45 +1,36 @@
 const express = require("express");
-const path = require("path");
+const BalanceSheetFetcher = require("../../../data_analyzer/BalanceSheetFetcher");
 
 const router = express.Router();
+const balanceSheetFetcher = new BalanceSheetFetcher();
 
-const reportPath = path.resolve(
-  __dirname,
-  "..",
-  "..",
-  "..",
-  "components",
-  "reports",
-  "balance_sheet_report.json"
-);
-
-let cachedReport;
-
-function loadBalanceReport() {
-  if (cachedReport) {
-    return cachedReport;
-  }
-
-  try {
-    cachedReport = require(reportPath);
-  } catch (err) {
-    console.error("[fin-server] failed to load balance report:", err);
-    cachedReport = null;
-  }
-
-  return cachedReport;
-}
-
-router.get("/", (req, res) => {
-  const report = loadBalanceReport();
-  if (!report) {
-    return res.status(503).json({
-      error: "Balance report unavailable",
-      status: 503,
+router.get("/", async (req, res) => {
+  const asOfDateString = req.query?.asOfDate;
+  if (!asOfDateString) {
+    return res.status(400).json({
+      error: "Missing required query parameter 'asOfDate'",
     });
   }
 
-  res.json(report);
+  const asOfDate = new Date(asOfDateString);
+  if (Number.isNaN(asOfDate.getTime())) {
+    return res.status(400).json({
+      error: "Invalid 'asOfDate' query parameter; expected a valid date",
+    });
+  }
+
+  try {
+    const report = await balanceSheetFetcher.buildBalanceSheetReport(
+      asOfDate,
+      false
+    );
+    res.json(report);
+  } catch (error) {
+    console.error("Failed to build balance sheet report:", error);
+    res.status(500).json({
+      error: "Failed to build balance sheet report",
+    });
+  }
 });
 
 module.exports = router;

@@ -16,7 +16,11 @@ const collectCollapsiblePaths = (accounts, path = [], result = new Set()) => {
     if (hasChildren) {
       const key = [...path, account.name].join(">");
       result.add(key);
-      collectCollapsiblePaths(account.children, [...path, account.name], result);
+      collectCollapsiblePaths(
+        account.children,
+        [...path, account.name],
+        result
+      );
     }
   }
 
@@ -80,8 +84,7 @@ export default function Balance() {
 
   const collapsiblePaths = collectCollapsiblePaths(balanceReports?.[0]);
   const isFullyCollapsed =
-    collapsiblePaths.size > 0 &&
-    collapsedPaths.size === collapsiblePaths.size;
+    collapsiblePaths.size > 0 && collapsedPaths.size === collapsiblePaths.size;
 
   const handleToggleCollapseAll = () => {
     if (collapsiblePaths.size === 0) {
@@ -97,6 +100,7 @@ export default function Balance() {
   };
 
   const activePeriodCount = Math.min(Math.max(periodCount ?? 1, 1), 3);
+  const hasLoadedReport = balanceReports.length > 0;
 
   return (
     <div className="page-shell">
@@ -122,10 +126,13 @@ export default function Balance() {
             periodCount={activePeriodCount}
             onPeriodCountChange={setPeriodCount}
             onToggleCollapseAll={handleToggleCollapseAll}
-            collapseToggleLabel={isFullyCollapsed ? "Expand All" : "Collapse All"}
+            collapseToggleLabel={
+              isFullyCollapsed ? "Expand All" : "Collapse All"
+            }
             collapseToggleDisabled={
               collapsiblePaths.size === 0 || isFetchingReport
             }
+            showCollapseToggle={hasLoadedReport}
           />
         </div>
       </main>

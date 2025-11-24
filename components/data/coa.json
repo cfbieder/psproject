@@ -30,9 +30,10 @@
               "WISE - PLN",
               "PKO - Deposits",
               "Santandar",
-              "Reolut-PLN"
+              "Revolut-PLN"
             ]
           },
+          { "Other Bank Accounts": ["WISE - GBP"] },
           {
             "Fidelity Stock": [
               "Fidelity IRA",
@@ -86,14 +87,12 @@
             ]
           },
           { "CVC - MIP": ["CVC - MIP"] },
-          { "WISE - GBP": ["WISE - GBP"] },
           { "Misc Investments": ["Misc Investments"] }
         ]
       },
       {
         "Liabilities": [
-          { "Tax Reserve - US": ["Tax Reserve - US"] },
-          { "Tax Reserve - PL": ["Tax Reserve - PL"] },
+          { "Tax Reserve": ["Tax Reserve - US", "Tax Reserve - PL"] },
           {
             "US - Mortgages": [
               "Mortgage - Nokomis",

@@ -4,7 +4,7 @@ const path = require("path");
 const DataGateway = require("../../../components/helpers/DataGateway");
 const PsCsvIngestor = require("../../../data_analyzer/psCsvIngestor");
 const DataAnalyzerUtils = require("../../../data_analyzer/dataAnalyzerUtils");
-const BalanceSheetFetcher = require("../../../data_analyzer/BalanceSheetFetcher");
+const BalanceSheetFetcher = require("../../../data_analyzer/balanceSheetFetcher");
 const PSdata = require("../../../components/models/PSdata");
 
 const router = express.Router();

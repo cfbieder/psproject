@@ -38,7 +38,6 @@ const fs = require("fs");
 const path = require("path");
 const frankfurterExchangeRates = require("./frankfurterExchangeRates");
 const getPsDataModel = () => require("../components/models/PSdata");
-const DataAnalyzerUtils = require("./dataAnalyzerUtils");
 
 const DEFAULT_ACCOUNT_NAMES_PATH =
   process.env.ACCOUNT_NAMES_PATH ||
@@ -63,7 +62,7 @@ class BalanceSheetFetcher {
     this.coaPath = coaPath || DEFAULT_COA_PATH;
   }
 
-  // Fetch account balances for given account data as of a specific date
+  // Fetch account balances for given file with account data as of a specific date
   async fetchAccountBalances(accountData, asOfDate) {
     const accountNames = await this.resolveAccountNames(accountData);
     if (!accountNames.length) {
@@ -92,7 +91,8 @@ class BalanceSheetFetcher {
       return {};
     }
 
-    const coaData = DataAnalyzerUtils.readJson(this.coaPath);
+    const coaData = JSON.parse(fs.readFileSync(this.coaPath, "utf8"));
+    //const coaData = readJson(this.coaPath);
     const balanceSheetEntry =
       Array.isArray(coaData) &&
       coaData.find(

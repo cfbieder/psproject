@@ -261,61 +261,66 @@
               "Travel - Food and Drink"
             ]
           },
-          { "Living Expenses": ["Kasia Spending", "Chris Spending"] },
           {
-            "Leisure": [
-              "Leisure - Entertainment",
-              "Leisure - Health And Fitness"
-            ]
-          },
-          { "Other Exp": "Other Exp" },
-          {
-            "Healthcare": [
-              "Healthcare - Doctor",
-              "Healthcare - Insurance",
-              "Healthcare - Other",
-              "Healthcare - Pharmacy"
-            ]
-          },
-          { "Education": "Education" },
-          {
-            "Children": [
+            "Living Expenses": [
+              "Kasia Spending",
+              "Chris Spending",
               {
-                "Children - Patrick": [
-                  "Patrick - Medical",
-                  "Patrick - Insurance",
-                  "Patrick - Exp",
-                  "Patrick - USF",
-                  "Patrick - Rent",
-                  "Travel - Patrick"
+                "Leisure": [
+                  "Leisure - Entertainment",
+                  "Leisure - Health And Fitness"
+                ]
+              },
+              { "Other Exp": "Other Exp" },
+              {
+                "Healthcare": [
+                  "Healthcare - Doctor",
+                  "Healthcare - Insurance",
+                  "Healthcare - Other",
+                  "Healthcare - Pharmacy"
+                ]
+              },
+              { "Education": "Education" },
+              {
+                "Children": [
+                  {
+                    "Children - Patrick": [
+                      "Patrick - Medical",
+                      "Patrick - Insurance",
+                      "Patrick - Exp",
+                      "Patrick - USF",
+                      "Patrick - Rent",
+                      "Travel - Patrick"
+                    ]
+                  },
+                  {
+                    "Children - Anna": [
+                      "Anna - ASW",
+                      "Anna - Exp",
+                      "Anna - Medical",
+                      "Children - Anna"
+                    ]
+                  }
+                ]
+              },
+              { "Groceries": "Groceries" },
+              { "Food and Drink": "Food and Drink" },
+              {
+                "Car Expense": [
+                  "Car Expense",
+                  "Car - Gas And Fuel",
+                  "Car - Insurance",
+                  "Car - Lease",
+                  "Car - Repair and Maintenance"
                 ]
               },
               {
-                "Children - Anna": [
-                  "Anna - ASW",
-                  "Anna - Exp",
-                  "Anna - Medical",
-                  "Children - Anna"
+                "Telephone": [
+                  "Utilities - Telephone - PL",
+                  "Utilities - Telephone - SP",
+                  "Utilities - Telephone - US"
                 ]
               }
-            ]
-          },
-          { "Groceries": "Groceries" },
-          { "Food and Drink": "Food and Drink" },
-          {
-            "Car Expense": [
-              "Car Expense",
-              "Car - Gas And Fuel",
-              "Car - Insurance",
-              "Car - Lease",
-              "Car - Repair and Maintenance"
-            ]
-          },
-          {
-            "Telephone": [
-              "Utilities - Telephone - PL",
-              "Utilities - Telephone - SP",
-              "Utilities - Telephone - US"
             ]
           },
           {

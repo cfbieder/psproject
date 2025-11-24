@@ -14,7 +14,7 @@ console.log("[DA] mode: %s", mode);
 // Library for MongoDB
 var mongoose = require("../components/node_modules/mongoose");
 const DataAnalyzerUtils = require("./dataAnalyzerUtils");
-const BalanceSheetFetcher = require("./BalanceSheetFetcher");
+const BalanceSheetFetcher = require("./balanceSheetFetcher");
 
 // Default path for account names JSON file
 const DEFAULT_ACCOUNT_NAMES_PATH =
@@ -118,7 +118,8 @@ async function main() {
   );
   console.log("[DA] Balance Sheet report generated.");
   */
-  //
+
+  /* uncomment to test category names and COA reporting
   await DataAnalyzerUtils.writeCategoryNamesFile(PSdata, categoryNamesPath);
   missCat = DataAnalyzerUtils.reportMissingCategories(
     categoryNamesPath,
@@ -130,6 +131,51 @@ async function main() {
     coaPath
   );
   console.log("[DA] Unknown COA Categories: ", missCOACat);
+
+  */
+  const startDate = new Date("2025-10-01");
+  console.log("[DA] As of Date: %s", startDate.toISOString());
+  const endDate = new Date("2025-10-31");
+  console.log("[DA] End Date: %s", endDate.toISOString());
+  const category = "Kasia Spending";
+  console.log("[DA] Category: %s", category);
+
+  const formatDate = (date) => {
+    const month = `${date.getMonth() + 1}`.padStart(2, "0");
+    const day = `${date.getDate()}`.padStart(2, "0");
+    return `${month}-${day}-${date.getFullYear()}`;
+  };
+
+  const cashFlowFetcher = require("./cashFLowFetcher");
+  const cff = new cashFlowFetcher();
+  cff.getCategoryBaseAmountSum(category, startDate, endDate).then((sum) => {
+    console.log(
+      `[DA] Total BaseAmount for category '${category}' from ${formatDate(
+        startDate
+      )} to ${formatDate(endDate)}: ${sum}`
+    );
+  });
+
+  /*
+  cff
+    .fetchCategoryBalances({
+      filename: categoryNamesPath,
+      fromDate: startDate,
+      toDate: endDate,
+    })
+    .then((balances) => {
+      console.log("[DA] Category Balances:", balances);
+    });
+    */
+
+  const cashFlowReport = await cff.buildCashFlowReport({
+    fromDate: startDate,
+    toDate: endDate,
+    outputToFile: true,
+    transfers: "exclude",
+  });
+  console.log(cashFlowReport);
+  console.log("[DA] Cash Flow report generated.");
 }
 
 main();

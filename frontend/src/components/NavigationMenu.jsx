@@ -10,6 +10,7 @@ const menuItems = [
     label: "Reports",
     submenu: [{ label: "Balance Summary", path: "/balance" }],
   },
+  { label: "Transactions" },
   { label: "Help" },
 ];
 

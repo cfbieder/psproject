@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongofin
+    restart: unless-stopped
+    command: ["mongod", "--port", "27018"]
+    ports:
+      - "27018:27018"
+    volumes:
+      - ./mongo_data:/data/db
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    depends_on:
+      - mongo
+    environment:
+      NODE_ENV: production
+      PORT: 3005
+      MONGO_URI: mongodb://mongo:27018/fin
+    ports:
+      - "3005:3005"
+    volumes:
+      - ./components/data:/app/components/data
+      - ./components/reports:/app/components/reports

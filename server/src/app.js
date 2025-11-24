@@ -11,6 +11,7 @@ app.use(morgan("tiny"));
 app.use(express.json());
 app.use(cors({ origin: true, credentials: true }));
 
+//todo: change /api to api/ingest-ps and update other routes accordingly
 app.use("/api/health", healthRouter);
 app.use("/api/balance", balanceRouter);
 app.use("/api", ingestRouter);

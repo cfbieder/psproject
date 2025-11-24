@@ -7,7 +7,7 @@ docker compose up -d
 docker compose up -d mongodb
 
 #run docker that is in container
-mongosh "mongodb://localhost:27017"
+mongosh "mongodb://localhost:27018"
 
 #mongo commands
 db.psdata.countDocuments({})
@@ -21,8 +21,8 @@ docker stop bookdb-api
 
 
 #restore mogno backup
-docker exec -it mongodb bash -lc 'mongorestore --uri="mongodb://localhost:27017/?authSource=admin" --db books --drop /dump/books'
-docker exec -it mongodb bash -lc 'mongorestore --uri="mongodb://localhost:27017/" --db books --drop /dump/books'
+docker exec -it mongodb bash -lc 'mongorestore --uri="mongodb://localhost:27018/?authSource=admin" --db books --drop /dump/books'
+docker exec -it mongodb bash -lc 'mongorestore --uri="mongodb://localhost:27018/" --db books --drop /dump/books'
 
 #backup mongo 
 docker exec mongodb mongodump --out /data/db/backups --db books --collection books --collection users
@@ -30,6 +30,6 @@ docker exec mongodb mongodump --out /data/db/backups --db books --collection boo
 
 
 #Linus process
-sudo netstat -tulpn | grep :27017
+sudo netstat -tulpn | grep :27018
 sudo kill
 

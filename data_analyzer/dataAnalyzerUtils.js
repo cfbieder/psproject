@@ -24,6 +24,12 @@ const usdCurrencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
 
+/*********************************************************************
+ * DataAnalyzerUtils
+ *
+ * Utility class for checking integrity between account names and COA files
+ *********************************************************************/
+
 // Utility class for checking integrity between account names and COA files
 class DataAnalyzerUtils {
   // Writes unique account names from the psModel to a JSON file
@@ -45,6 +51,26 @@ class DataAnalyzerUtils {
 
     fs.writeFileSync(outputPath, JSON.stringify(accounts, null, 2) + "\n");
     console.log("[DA] Account names saved to %s", outputPath);
+  }
+  // Writes unique category names from the psModel to a JSON file
+  static async writeCategoryNamesFile(psModel, outputPath) {
+    if (!psModel || typeof psModel.distinct !== "function") {
+      throw new TypeError("psModel with a distinct function is required");
+    }
+
+    const names = await psModel.distinct("Category").exec();
+    console.log("[DA] Count Unique Category Names: %d", names.length);
+
+    const categories = {};
+    for (let i = 0; i < names.length; i += 1) {
+      const name = names[i];
+      if (typeof name === "string" && name.length > 0) {
+        categories[name] = "";
+      }
+    }
+
+    fs.writeFileSync(outputPath, JSON.stringify(categories, null, 2) + "\n");
+    console.log("[DA] Category names saved to %s", outputPath);
   }
 
   // Reads and parses a JSON file from the given path
@@ -91,6 +117,9 @@ class DataAnalyzerUtils {
     return results;
   }
 
+  /************************************************************
+   * Integrity Check Functions
+   ************************************************************/
   // Reports account names that are missing from the COA file
   static reportMissingAccounts(accountNamesPath, coaPath) {
     const accountNamesData = this.readJson(accountNamesPath);
@@ -106,6 +135,44 @@ class DataAnalyzerUtils {
 
     return {
       missingAccounts: missing,
+      missingCount: missing.length,
+      status: missing.length ? "missing" : "ok",
+    };
+  }
+
+  // Reports category names that are missing from the COA file
+  static reportMissingCategories(categoryNamesPath, coaPath) {
+    const categoryNamesData = this.readJson(categoryNamesPath);
+    const coaData = this.readJson(coaPath);
+    const profitLossEntry =
+      Array.isArray(coaData) &&
+      coaData.find(
+        (item) =>
+          item &&
+          typeof item === "object" &&
+          Object.prototype.hasOwnProperty.call(item, "Profit & Loss Accounts")
+      );
+
+    if (!profitLossEntry) {
+      return {
+        status: "profit_loss_missing",
+        missingCategories: [],
+        missingCount: 0,
+      };
+    }
+
+    const profitLossData = profitLossEntry["Profit & Loss Accounts"];
+    const coaCategories = this.collectCoaStrings(profitLossData);
+
+    const missing = [];
+    for (const name of Object.keys(categoryNamesData)) {
+      if (name && !coaCategories.has(name)) {
+        missing.push(name);
+      }
+    }
+
+    return {
+      missingCategories: missing,
       missingCount: missing.length,
       status: missing.length ? "missing" : "ok",
     };
@@ -150,6 +217,50 @@ class DataAnalyzerUtils {
       unknownCount: accounts.length,
     };
   }
+
+  // Reports COA categories that are unknown in the category names file
+  static reportUnknownCoaCategories(categoryNamesPath, coaPath) {
+    const categoryNamesData = this.readJson(categoryNamesPath);
+    const knownCategories = new Set(
+      Object.keys(categoryNamesData).filter(
+        (name) => typeof name === "string" && name.length > 0
+      )
+    );
+    const coaData = this.readJson(coaPath);
+    const profitLossEntry =
+      Array.isArray(coaData) &&
+      coaData.find(
+        (item) =>
+          item &&
+          typeof item === "object" &&
+          Object.prototype.hasOwnProperty.call(item, "Profit & Loss Accounts")
+      );
+
+    if (!profitLossEntry) {
+      return {
+        status: "profit_loss_missing",
+        unknownCategories: [],
+        unknownCount: 0,
+      };
+    }
+
+    const profitLossData = profitLossEntry["Profit & Loss Accounts"];
+    const unknownCategories = this.collectCoaStrings(
+      profitLossData,
+      (name) => !knownCategories.has(name)
+    );
+
+    const categories = Array.from(unknownCategories);
+    return {
+      status: "ok",
+      unknownCategories: categories,
+      unknownCount: categories.length,
+    };
+  }
+
+  /************************
+   * Helper Functions
+   ************************/
 
   static getUsdCurrencyFormatter() {
     return usdCurrencyFormatter;

@@ -123,48 +123,90 @@ export default function UploadPS() {
 
     try {
       const result = await Rest.fetchJson("/api/analyze-ps");
-      const missingData = result?.misAcct ?? {};
-      const unknownData = result?.missCOA ?? {};
+      const {
+        misAcct = {},
+        missCOAact = {},
+        misCat = {},
+        missCOACat = {},
+      } = result ?? {};
 
-      const missingList = Array.isArray(missingData.missingAccounts)
-        ? missingData.missingAccounts.filter(
+      const missingAccounts = Array.isArray(misAcct.missingAccounts)
+        ? misAcct.missingAccounts.filter(
             (item) => typeof item === "string" && item
           )
         : [];
-      const unknownList = Array.isArray(unknownData.unknownAccounts)
-        ? unknownData.unknownAccounts.filter(
+      const unknownAccounts = Array.isArray(missCOAact.unknownAccounts)
+        ? missCOAact.unknownAccounts.filter(
             (item) => typeof item === "string" && item
           )
         : [];
-      const missingCount =
-        Number.isFinite(missingData.missingCount) &&
-        missingData.missingCount >= 0
-          ? missingData.missingCount
-          : missingList.length;
-      const unknownCount =
-        Number.isFinite(unknownData.unknownCount) &&
-        unknownData.unknownCount >= 0
-          ? unknownData.unknownCount
-          : unknownList.length;
+      const missingCategories = Array.isArray(misCat.missingCategories)
+        ? misCat.missingCategories.filter(
+            (item) => typeof item === "string" && item
+          )
+        : [];
+      const unknownCategories = Array.isArray(missCOACat.unknownCategories)
+        ? missCOACat.unknownCategories.filter(
+            (item) => typeof item === "string" && item
+          )
+        : [];
+
+      const missingAccountCount =
+        Number.isFinite(misAcct.missingCount) && misAcct.missingCount >= 0
+          ? misAcct.missingCount
+          : missingAccounts.length;
+      const unknownAccountCount =
+        Number.isFinite(missCOAact.unknownCount) &&
+        missCOAact.unknownCount >= 0
+          ? missCOAact.unknownCount
+          : unknownAccounts.length;
+      const missingCategoryCount =
+        Number.isFinite(misCat.missingCount) && misCat.missingCount >= 0
+          ? misCat.missingCount
+          : missingCategories.length;
+      const unknownCategoryCount =
+        Number.isFinite(missCOACat.unknownCount) &&
+        missCOACat.unknownCount >= 0
+          ? missCOACat.unknownCount
+          : unknownCategories.length;
 
       const details = [];
-      if (missingList.length) {
-        details.push(`Missing from COA: ${missingList.join(", ")}`);
+      if (missingAccounts.length) {
+        details.push(`Missing from COA (accounts): ${missingAccounts.join(", ")}`);
       }
-      if (unknownList.length) {
-        details.push(`Unrecognized COA accounts: ${unknownList.join(", ")}`);
+      if (unknownAccounts.length) {
+        details.push(
+          `Unrecognized COA accounts: ${unknownAccounts.join(", ")}`
+        );
+      }
+      if (missingCategories.length) {
+        details.push(
+          `Missing from COA (categories): ${missingCategories.join(", ")}`
+        );
+      }
+      if (unknownCategories.length) {
+        details.push(
+          `Unrecognized COA categories: ${unknownCategories.join(", ")}`
+        );
       }
       if (
-        unknownList.length === 0 &&
-        unknownData.status &&
-        unknownData.status !== "ok"
+        unknownAccounts.length === 0 &&
+        missCOAact.status &&
+        missCOAact.status !== "ok"
       ) {
-        details.push(`COA status: ${unknownData.status}`);
+        details.push(`COA account status: ${missCOAact.status}`);
+      }
+      if (
+        unknownCategories.length === 0 &&
+        missCOACat.status &&
+        missCOACat.status !== "ok"
+      ) {
+        details.push(`COA category status: ${missCOACat.status}`);
       }
 
       setAnalyzeStatus({
         type: "success",
-        message: `Analysis complete: ${missingCount} missing in COA; ${unknownCount} unknown COA accounts.`,
+        message: `Analysis complete: ${missingAccountCount} missing accounts, ${unknownAccountCount} unknown accounts; ${missingCategoryCount} missing categories, ${unknownCategoryCount} unknown categories.`,
         details,
       });
     } catch (error) {

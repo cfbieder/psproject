@@ -15,6 +15,10 @@ const csvFilePath = path.resolve(
   __dirname,
   "../../../components/data/ps-transactions.csv"
 );
+const categoryNamesPath = path.resolve(
+  __dirname,
+  "../../../components/data/category_names.json"
+);
 const csvBodyParser = express.text({
   type: ["text/csv", "text/plain", "application/octet-stream"],
   limit: "10mb",
@@ -106,20 +110,35 @@ const analyzePsHandler = async (req, res) => {
     );
     const coaData = DataAnalyzerUtils.readJson(coaPath);
     const coaAccounts = DataAnalyzerUtils.collectCoaStrings(coaData);
-    misAcct = DataAnalyzerUtils.reportMissingAccounts(
+    const misAcct = DataAnalyzerUtils.reportMissingAccounts(
       accountNamesPath,
       coaPath
     );
     console.log("[DA] Missing Accounts: ", misAcct);
-    missCOA = DataAnalyzerUtils.reportUnknownCoaAccounts(
+    const missCOAact = DataAnalyzerUtils.reportUnknownCoaAccounts(
       accountNamesPath,
       coaPath
     );
-    console.log("[DA] Unknown COA Accounts: ", missCOA);
-
+    console.log("[DA] Unknown COA Accounts: ", missCOAact);
+    await DataAnalyzerUtils.writeCategoryNamesFile(
+      PSdata,
+      categoryNamesPath
+    );
+    const misCat = DataAnalyzerUtils.reportMissingCategories(
+      categoryNamesPath,
+      coaPath
+    );
+    console.log("[DA] Missing Categories: ", misCat);
+    const missCOACat = DataAnalyzerUtils.reportUnknownCoaCategories(
+      categoryNamesPath,
+      coaPath
+    );
+    console.log("[DA] Unknown COA Categories: ", missCOACat);
     return res.json({
       misAcct,
-      missCOA,
+      missCOAact,
+      misCat,
+      missCOACat,
     });
   } catch (error) {
     console.error("[ANALYZE-PS] Failed to analyze PS data:", error);

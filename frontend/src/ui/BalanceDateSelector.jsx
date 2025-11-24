@@ -7,6 +7,9 @@ export default function BalanceDateSelector({
   isLoading,
   periodCount,
   onPeriodCountChange,
+  onToggleCollapseAll,
+  collapseToggleLabel,
+  collapseToggleDisabled,
 }) {
   const normalizedDates = Array.isArray(periodDates) ? periodDates : [];
   const clampedPeriodCount = Math.min(Math.max(periodCount ?? 1, 1), 3);
@@ -63,6 +66,14 @@ export default function BalanceDateSelector({
           disabled={isLoading}
         >
           {isLoading ? "Generating..." : "Generate Report"}
+        </button>
+        <button
+          className="generate-report-button"
+          type="button"
+          onClick={onToggleCollapseAll}
+          disabled={collapseToggleDisabled}
+        >
+          {collapseToggleLabel}
         </button>
       </aside>
     </div>

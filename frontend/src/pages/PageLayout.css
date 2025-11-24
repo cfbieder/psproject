@@ -45,12 +45,15 @@
 }
 .home-hero__image--full {
   grid-column: 1 / -1;
-  max-width: min(1200px, 95vw);
+  width: 100%;
+  max-width: 95vw;
   justify-self: center;
 }
 .home-hero__image--full img {
-  height: 65vh;
-  min-height: 420px;
+  width: 100%;
+  height: auto;
+  max-height: calc(100vh - 200px);
+  object-fit: contain;
 }
 @media (max-width: 960px) {
   .page-main {

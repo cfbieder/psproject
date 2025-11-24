@@ -5,6 +5,24 @@ import NavigationMenu from "../components/NavigationMenu.jsx";
 import Rest from "../js/rest.js";
 import "./PageLayout.css";
 
+const collectCollapsiblePaths = (accounts, path = [], result = new Set()) => {
+  if (!Array.isArray(accounts)) {
+    return result;
+  }
+
+  for (const account of accounts) {
+    const hasChildren =
+      Array.isArray(account.children) && account.children.length > 0;
+    if (hasChildren) {
+      const key = [...path, account.name].join(">");
+      result.add(key);
+      collectCollapsiblePaths(account.children, [...path, account.name], result);
+    }
+  }
+
+  return result;
+};
+
 export default function Balance() {
   const getToday = () => {
     const today = new Date();
@@ -19,6 +37,7 @@ export default function Balance() {
   const [balanceReports, setBalanceReports] = useState([]);
   const [reportError, setReportError] = useState("");
   const [isFetchingReport, setIsFetchingReport] = useState(false);
+  const [collapsedPaths, setCollapsedPaths] = useState(() => new Set());
 
   const handlePeriodDateChange = (index, value) => {
     setPeriodDates((prev) => {
@@ -38,12 +57,43 @@ export default function Balance() {
         activeDates.map((date) => Rest.fetchBalanceReport(date))
       );
       setBalanceReports(reports);
+      setCollapsedPaths(new Set());
     } catch (error) {
       console.error("Failed to fetch balance report:", error);
       setReportError(error?.message ?? "Failed to fetch balance report");
     } finally {
       setIsFetchingReport(false);
     }
+  };
+
+  const handleTogglePath = (pathKey) => {
+    setCollapsedPaths((prev) => {
+      const next = new Set(prev);
+      if (next.has(pathKey)) {
+        next.delete(pathKey);
+      } else {
+        next.add(pathKey);
+      }
+      return next;
+    });
+  };
+
+  const collapsiblePaths = collectCollapsiblePaths(balanceReports?.[0]);
+  const isFullyCollapsed =
+    collapsiblePaths.size > 0 &&
+    collapsedPaths.size === collapsiblePaths.size;
+
+  const handleToggleCollapseAll = () => {
+    if (collapsiblePaths.size === 0) {
+      return;
+    }
+
+    setCollapsedPaths((prev) => {
+      if (prev.size === collapsiblePaths.size) {
+        return new Set();
+      }
+      return new Set(collapsiblePaths);
+    });
   };
 
   const activePeriodCount = Math.min(Math.max(periodCount ?? 1, 1), 3);
@@ -57,6 +107,8 @@ export default function Balance() {
             balanceReports={balanceReports}
             periodDates={periodDates}
             periodCount={activePeriodCount}
+            collapsedPaths={collapsedPaths}
+            onTogglePath={handleTogglePath}
           />
         </div>
         <div className="balance-layout-holder">
@@ -69,6 +121,11 @@ export default function Balance() {
             report={balanceReports[0]}
             periodCount={activePeriodCount}
             onPeriodCountChange={setPeriodCount}
+            onToggleCollapseAll={handleToggleCollapseAll}
+            collapseToggleLabel={isFullyCollapsed ? "Expand All" : "Collapse All"}
+            collapseToggleDisabled={
+              collapsiblePaths.size === 0 || isFetchingReport
+            }
           />
         </div>
       </main>

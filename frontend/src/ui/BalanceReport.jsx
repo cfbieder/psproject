@@ -34,7 +34,9 @@ const renderAccountRows = (
   accounts,
   level = 0,
   path = [],
-  comparisonMaps = []
+  comparisonMaps = [],
+  collapsedPaths = new Set(),
+  onToggle = () => {}
 ) => {
   if (!Array.isArray(accounts) || accounts.length === 0) {
     return [];
@@ -44,6 +46,7 @@ const renderAccountRows = (
     const hasChildren =
       Array.isArray(account.children) && account.children.length > 0;
     const pathKey = [...path, account.name].join(">");
+    const isCollapsed = collapsedPaths.has(pathKey);
     const comparisonValues = comparisonMaps.map(
       (map) => map?.get(pathKey) ?? 0
     );
@@ -53,6 +56,26 @@ const renderAccountRows = (
           className="balance-report-table__name"
           style={{ paddingLeft: `${level * 1.25}rem` }}
         >
+          <button
+            type="button"
+            onClick={() => onToggle(pathKey)}
+            disabled={!hasChildren}
+            style={{
+              marginRight: "0.5rem",
+              background: "none",
+              border: "none",
+              cursor: hasChildren ? "pointer" : "default",
+              padding: 0,
+              fontSize: "0.9rem",
+            }}
+            aria-label={
+              hasChildren
+                ? `${isCollapsed ? "Expand" : "Collapse"} ${account.name}`
+                : undefined
+            }
+          >
+            {hasChildren ? (isCollapsed ? "+" : "−") : "\u00a0"}
+          </button>
           {account.name}
         </td>
         <td
@@ -77,12 +100,14 @@ const renderAccountRows = (
       </tr>
     );
 
-    const childrenRows = hasChildren
+    const childrenRows = hasChildren && !isCollapsed
       ? renderAccountRows(
           account.children,
           level + 1,
           [...path, account.name],
-          comparisonMaps
+          comparisonMaps,
+          collapsedPaths,
+          onToggle
         )
       : [];
 
@@ -94,6 +119,8 @@ export default function BalanceReport({
   balanceReports,
   periodDates,
   periodCount,
+  collapsedPaths = new Set(),
+  onTogglePath = () => {},
 }) {
   const activeReports = Array.isArray(balanceReports)
     ? balanceReports.slice(0, Math.min(periodCount ?? 1, 3))
@@ -141,7 +168,14 @@ export default function BalanceReport({
               </tr>
             </thead>
             <tbody>
-              {renderAccountRows(baseReport, 0, [], comparisonMaps)}
+              {renderAccountRows(
+                baseReport,
+                0,
+                [],
+                comparisonMaps,
+                collapsedPaths,
+                onTogglePath
+              )}
             </tbody>
           </table>
         </div>

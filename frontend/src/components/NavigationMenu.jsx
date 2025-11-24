@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import finIcon from "../assets/fin.png";
+import banner from "../assets/banner.png";
 import "./NavigationMenu.css";
 
 const menuItems = [
@@ -16,29 +16,34 @@ const menuItems = [
 
 export default function NavigationMenu() {
   return (
-    <div class="navbar">
-      {menuItems.map((item) =>
-        item.submenu ? (
-          <div key={item.label} className="dropdown">
-            <button className="dropbtn">
-              {item.label}
-              <i className="fa fa-caret-down"></i>
-            </button>
-            <div className="dropdown-content">
-              {item.submenu.map((subItem) => (
-                <Link key={subItem.label} to={subItem.path}>
-                  {subItem.label}
-                </Link>
-              ))}
+    <header className="navbar">
+      <div className="navbar__brand">
+        <img src={banner} alt="Fin banner" />
+      </div>
+      <nav className="navbar__links">
+        {menuItems.map((item) =>
+          item.submenu ? (
+            <div key={item.label} className="dropdown">
+              <button className="dropbtn">
+                {item.label}
+                <i className="fa fa-caret-down"></i>
+              </button>
+              <div className="dropdown-content">
+                {item.submenu.map((subItem) => (
+                  <Link key={subItem.label} to={subItem.path}>
+                    {subItem.label}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-        ) : (
-          <Link key={item.label} className="navlink" to={item.path || "#"}>
-            {item.label}
-          </Link>
-        )
-      )}
-    </div>
+          ) : (
+            <Link key={item.label} className="navlink" to={item.path || "#"}>
+              {item.label}
+            </Link>
+          )
+        )}
+      </nav>
+    </header>
   );
 }
 /*

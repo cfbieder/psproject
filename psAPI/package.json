@@ -9,5 +9,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "env-cmd -e development -- nodemon app.js"
+  },
+  "dependencies": {
+    "env-cmd": "^11.0.0",
+    "nodemon": "^3.1.11"
   }
 }

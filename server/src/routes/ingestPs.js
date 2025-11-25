@@ -2,9 +2,9 @@ const express = require("express");
 const fs = require("node:fs/promises");
 const path = require("path");
 const DataGateway = require("../../../components/helpers/DataGateway");
-const PsCsvIngestor = require("../../../data_analyzer/psCsvIngestor");
-const DataAnalyzerUtils = require("../../../data_analyzer/dataAnalyzerUtils");
-const BalanceSheetFetcher = require("../../../data_analyzer/balanceSheetFetcher");
+const PsCsvIngestor = require("../services/psCsvIngestor");
+const DataAnalyzerUtils = require("../services/dataAnalyzerUtils");
+const BalanceSheetFetcher = require("../services/balanceSheetFetcher");
 const PSdata = require("../../../components/models/PSdata");
 
 const router = express.Router();

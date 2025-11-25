@@ -13,8 +13,8 @@ console.log("[DA] mode: %s", mode);
 
 // Library for MongoDB
 var mongoose = require("../components/node_modules/mongoose");
-const DataAnalyzerUtils = require("./dataAnalyzerUtils");
-const BalanceSheetFetcher = require("./balanceSheetFetcher");
+const DataAnalyzerUtils = require("../server/src/services/dataAnalyzerUtils");
+const BalanceSheetFetcher = require("../server/src/services/balanceSheetFetcher");
 
 // Default path for account names JSON file
 const DEFAULT_ACCOUNT_NAMES_PATH =
@@ -42,7 +42,7 @@ const DataGateway = require("../components/helpers/DataGateway");
 const gateway = new DataGateway();
 
 //CSV Ingestor
-const PsCsvIngestor = require("./psCsvIngestor");
+const PsCsvIngestor = require("../server/src/services/psCsvIngestor");
 const psCsvIngestor = new PsCsvIngestor({ gateway });
 const balanceSheetFetcher = new BalanceSheetFetcher();
 const accountNamesPath = DEFAULT_ACCOUNT_NAMES_PATH;
@@ -146,7 +146,7 @@ async function main() {
     return `${month}-${day}-${date.getFullYear()}`;
   };
 
-  const cashFlowFetcher = require("./cashFLowFetcher");
+  const cashFlowFetcher = require("../server/src/services/cashFLowFetcher");
   const cff = new cashFlowFetcher();
   cff.getCategoryBaseAmountSum(category, startDate, endDate).then((sum) => {
     console.log(

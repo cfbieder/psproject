@@ -1,5 +1,5 @@
 const express = require("express");
-const CashFlowFetcher = require("../../../data_analyzer/cashFLowFetcher");
+const CashFlowFetcher = require("../services/cashFLowFetcher");
 
 const router = express.Router();
 const cashFlowFetcher = new CashFlowFetcher();

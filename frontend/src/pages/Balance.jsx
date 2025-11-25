@@ -107,13 +107,15 @@ export default function Balance() {
       <NavigationMenu />
       <main className="page-main balance-grid">
         <div className="balance-layout-wrapper">
-          <BalanceReport
-            balanceReports={balanceReports}
-            periodDates={periodDates}
-            periodCount={activePeriodCount}
-            collapsedPaths={collapsedPaths}
-            onTogglePath={handleTogglePath}
-          />
+          <div className="report-scroll-container">
+            <BalanceReport
+              balanceReports={balanceReports}
+              periodDates={periodDates}
+              periodCount={activePeriodCount}
+              collapsedPaths={collapsedPaths}
+              onTogglePath={handleTogglePath}
+            />
+          </div>
         </div>
         <div className="balance-layout-holder">
           <BalanceDateSelector

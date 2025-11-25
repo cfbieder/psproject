@@ -114,16 +114,18 @@
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
   opacity: 0;
-  pointer-events: none;
+  visibility: hidden;
   transform: translateY(-6px);
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: opacity 0.15s ease 0.5s, transform 0.15s ease 0.5s,
+    visibility 0s linear 2s;
 }
 
 .dropdown:hover .dropdown__menu,
 .dropdown:focus-within .dropdown__menu {
   opacity: 1;
-  pointer-events: auto;
+  visibility: visible;
   transform: translateY(0);
+  transition-delay: 0s;
 }
 
 .dropdown__link {

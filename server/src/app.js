@@ -4,6 +4,7 @@ const morgan = require("morgan");
 
 const healthRouter = require("./routes/health");
 const balanceRouter = require("./routes/balance");
+const cashFlowRouter = require("./routes/cashFlow");
 const ingestRouter = require("./routes/ingestPs");
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(cors({ origin: true, credentials: true }));
 //todo: change /api to api/ingest-ps and update other routes accordingly
 app.use("/api/health", healthRouter);
 app.use("/api/balance", balanceRouter);
+app.use("/api/cash-flow", cashFlowRouter);
 app.use("/api", ingestRouter);
 
 // URL of MongoDB server
@@ -27,6 +29,7 @@ app.get("/", (req, res) => {
     routes: [
       "/api/health",
       "/api/balance",
+      "/api/cash-flow",
       "/api/upload-ps",
       "/api/ingest-ps",
       "/api/analyze-ps",

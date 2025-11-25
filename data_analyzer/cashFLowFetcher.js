@@ -22,6 +22,8 @@ const DEFAULT_CASH_FLOW_REPORT_PATH = path.join(
   "../components/reports/cash_flow_report.json"
 );
 
+const UNREALIZED_GL_CATEGORY = "Unrealized G/L";
+
 /** Fetches income and expense data for category as of a from start date to end data.
  */
 
@@ -35,9 +37,13 @@ class CashFlowFetcher {
     toDate,
     outputToFile = false,
     transfers,
+    includeUnrealizedGL = false,
   } = {}) {
     const transferMode =
       transfers === "include" || transfers === "only" ? transfers : "exclude";
+    const excludedCategorySet = includeUnrealizedGL
+      ? null
+      : new Set([UNREALIZED_GL_CATEGORY]);
 
     const coaData = JSON.parse(fs.readFileSync(DEFAULT_COA_PATH, "utf8"));
     const profitLossEntry =
@@ -55,6 +61,10 @@ class CashFlowFetcher {
 
     const structure = profitLossEntry["Profit & Loss Accounts"];
     const transferCategories = extractTransferCategories(structure);
+    const transferCategorySet =
+      transferCategories && transferCategories.length
+        ? new Set(transferCategories)
+        : null;
 
     const categoryBalances = await this.fetchCategoryBalances({
       filename: DEFAULT_CATEGORY_NAMES_PATH,
@@ -62,6 +72,9 @@ class CashFlowFetcher {
       toDate,
       transfers: transferMode,
       transferCategories,
+      excludedCategories: excludedCategorySet
+        ? [UNREALIZED_GL_CATEGORY]
+        : undefined,
     });
 
     const totals = new Map();
@@ -84,13 +97,14 @@ class CashFlowFetcher {
 
       for (const [name, value] of Object.entries(entry)) {
         const isTransferNode = name === "Transfers";
-        if (transferMode === "only" && !isTransferNode) {
-          continue;
-        }
         if (transferMode === "exclude" && isTransferNode) {
           continue;
         }
-        const node = buildCashFlowNode(name, value, totals);
+        const node = buildCashFlowNode(name, value, totals, {
+          transferMode,
+          transferCategorySet,
+          excludedCategorySet,
+        });
         if (node) {
           nodes.push(node);
         }
@@ -126,6 +140,7 @@ class CashFlowFetcher {
     toDate,
     transfers,
     transferCategories,
+    excludedCategories,
   } = {}) {
     const toDateValue = (value) => {
       if (!value) return null;
@@ -147,10 +162,25 @@ class CashFlowFetcher {
       ? categoryData
       : Object.keys(categoryData);
 
+    if (excludedCategories && excludedCategories.length > 0) {
+      const excludedSet = new Set(
+        excludedCategories
+          .map((category) =>
+            typeof category === "string" ? category.trim() : ""
+          )
+          .filter(Boolean)
+      );
+      if (excludedSet.size > 0) {
+        categories = categories.filter((category) => !excludedSet.has(category));
+      }
+    }
+
     if (transferCategories && transferCategories.length > 0) {
       const transferSet = new Set(transferCategories);
       if (transfers === "exclude") {
-        categories = categories.filter((category) => !transferSet.has(category));
+        categories = categories.filter(
+          (category) => !transferSet.has(category)
+        );
       } else if (transfers === "only") {
         categories = categories.filter((category) => transferSet.has(category));
       }
@@ -301,8 +331,17 @@ function extractTransferCategories(structure) {
   return Array.from(transferSet);
 }
 
-function buildCashFlowNode(name, value, totals) {
+function buildCashFlowNode(
+  name,
+  value,
+  totals,
+  { transferMode, transferCategorySet, excludedCategorySet } = {}
+) {
   if (!name) {
+    return null;
+  }
+
+  if (excludedCategorySet && excludedCategorySet.has(name)) {
     return null;
   }
 
@@ -311,6 +350,24 @@ function buildCashFlowNode(name, value, totals) {
       typeof value === "string" && value.trim().length > 0
         ? value.trim()
         : name;
+    if (excludedCategorySet && excludedCategorySet.has(categoryName)) {
+      return null;
+    }
+    const isTransferCategory =
+      name === "Transfers" ||
+      (transferCategorySet &&
+        (transferCategorySet.has(categoryName) ||
+          transferCategorySet.has(name)));
+    if (transferMode === "only" && !isTransferCategory) {
+      return null;
+    }
+    if (
+      transferMode === "exclude" &&
+      transferCategorySet &&
+      (transferCategorySet.has(categoryName) || transferCategorySet.has(name))
+    ) {
+      return null;
+    }
     const total = totals.get(categoryName) || 0;
     return { name, total };
   }
@@ -324,6 +381,21 @@ function buildCashFlowNode(name, value, totals) {
       if (!categoryName) {
         continue;
       }
+      if (excludedCategorySet && excludedCategorySet.has(categoryName)) {
+        continue;
+      }
+      const isTransferCategory =
+        transferCategorySet && transferCategorySet.has(categoryName);
+      if (transferMode === "only" && !isTransferCategory) {
+        continue;
+      }
+      if (
+        transferMode === "exclude" &&
+        transferCategorySet &&
+        transferCategorySet.has(categoryName)
+      ) {
+        continue;
+      }
       const categoryTotal = totals.get(categoryName) || 0;
       children.push({ name: categoryName, total: categoryTotal });
       total += categoryTotal;
@@ -332,13 +404,25 @@ function buildCashFlowNode(name, value, totals) {
 
     if (entry && typeof entry === "object") {
       for (const [childName, childValue] of Object.entries(entry)) {
-        const childNode = buildCashFlowNode(childName, childValue, totals);
+        const childNode = buildCashFlowNode(childName, childValue, totals, {
+          transferMode,
+          transferCategorySet,
+          excludedCategorySet,
+        });
         if (childNode) {
           children.push(childNode);
           total += childNode.total || 0;
         }
       }
     }
+  }
+
+  if (
+    transferMode === "only" &&
+    children.length === 0 &&
+    name !== "Transfers"
+  ) {
+    return null;
   }
 
   return { name, total, children };

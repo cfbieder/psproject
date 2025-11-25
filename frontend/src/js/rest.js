@@ -47,4 +47,24 @@ export default class Rest {
     const report = await Rest.fetchJson(`/api/balance?asOfDate=${encodedDate}`);
     return report?.["Balance Sheet Accounts"] ?? null;
   }
+
+  static async fetchCashFlowReport({
+    fromDate,
+    toDate,
+    transfers,
+    includeUnrealizedGL,
+  } = {}) {
+    const params = new URLSearchParams();
+    if (fromDate) params.set("fromDate", fromDate);
+    if (toDate) params.set("toDate", toDate);
+    if (transfers) params.set("transfers", transfers);
+    if (typeof includeUnrealizedGL === "boolean") {
+      params.set("includeUnrealizedGL", includeUnrealizedGL);
+    }
+
+    const query = params.toString();
+    const path = `/api/cash-flow${query ? `?${query}` : ""}`;
+    const report = await Rest.fetchJson(path);
+    return report?.["Profit & Loss Accounts"] ?? null;
+  }
 }

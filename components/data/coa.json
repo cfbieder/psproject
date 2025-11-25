@@ -147,7 +147,6 @@
           {
             "Financial Expenses": [
               "Bank Fees",
-              "FX",
               "Interest Expense",
               "Unrealized G/L"
             ]
@@ -257,8 +256,7 @@
                   "Travel - Food and Drink",
                   "Work Travel"
                 ]
-              },
-              "Travel - Food and Drink"
+              }
             ]
           },
           {
@@ -347,7 +345,8 @@
               "Transfer - Mortgage",
               "Transfer - Real Estate Investment",
               "Transfer - Securities Trades",
-              "Transfer - Unmatched"
+              "Transfer - Unmatched",
+              "FX"
             ]
           }
         ]

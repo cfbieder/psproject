@@ -8,7 +8,10 @@ const menuItems = [
   { label: "Dashboard" },
   {
     label: "Reports",
-    submenu: [{ label: "Balance Summary", path: "/balance" }],
+    submenu: [
+      { label: "Balance Summary", path: "/balance" },
+      { label: "Cash Flow Summary", path: "/cash-flow" },
+    ],
   },
   { label: "Transactions" },
   { label: "Help" },

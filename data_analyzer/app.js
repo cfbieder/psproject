@@ -172,7 +172,8 @@ async function main() {
     fromDate: startDate,
     toDate: endDate,
     outputToFile: true,
-    transfers: "exclude",
+    transfers: "only",
+    includeUnrealizedGL: false,
   });
   console.log(cashFlowReport);
   console.log("[DA] Cash Flow report generated.");

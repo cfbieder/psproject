@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Balance from "./pages/Balance.jsx";
+import CashFlow from "./pages/CashFlow.jsx";
 import Home from "./pages/Home.jsx";
 import UploadPS from "./pages/UploadPS.jsx";
 
@@ -9,6 +10,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/balance" element={<Balance />} />
+        <Route path="/cash-flow" element={<CashFlow />} />
         <Route path="/upload-ps" element={<UploadPS />} />
       </Routes>
     </BrowserRouter>

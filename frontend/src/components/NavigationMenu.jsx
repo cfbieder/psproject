@@ -3,7 +3,6 @@ import banner from "../assets/banner.png";
 import "./NavigationMenu.css";
 
 const menuItems = [
-  { label: "Home", path: "/" },
   { label: "File", submenu: [{ label: "Upload PS", path: "/upload-ps" }] },
   { label: "Dashboard" },
   {
@@ -20,32 +19,56 @@ const menuItems = [
 export default function NavigationMenu() {
   return (
     <header className="navbar">
-      <div className="navbar__brand">
-        <img src={banner} alt="Fin banner" />
-      </div>
-      <nav className="navbar__links">
-        {menuItems.map((item) =>
-          item.submenu ? (
-            <div key={item.label} className="dropdown">
-              <button className="dropbtn">
-                {item.label}
-                <i className="fa fa-caret-down"></i>
-              </button>
-              <div className="dropdown-content">
-                {item.submenu.map((subItem) => (
-                  <Link key={subItem.label} to={subItem.path}>
-                    {subItem.label}
-                  </Link>
-                ))}
+      <div className="navbar__inner">
+        <Link className="navbar__brand" to="/">
+          <div className="navbar__brand-image">
+            <img src={banner} alt="Fin banner" />
+          </div>
+          <div className="navbar__brand-copy">
+            <p className="navbar__title">Fin Workspace</p>
+            <span className="navbar__subtitle">
+              Balance · Cash flow · PS data
+            </span>
+          </div>
+        </Link>
+        <nav className="navbar__links">
+          <Link className="navlink" to="/">
+            Home
+          </Link>
+          {menuItems.map((item) =>
+            item.submenu ? (
+              <div key={item.label} className="dropdown">
+                <button type="button" className="navlink navlink--dropdown">
+                  <span>{item.label}</span>
+                  <span aria-hidden>▾</span>
+                </button>
+                <div className="dropdown__menu">
+                  {item.submenu.map((subItem) => (
+                    <Link
+                      key={subItem.label}
+                      className="dropdown__link"
+                      to={subItem.path}
+                    >
+                      {subItem.label}
+                      <span className="dropdown__arrow" aria-hidden>
+                        ↗
+                      </span>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : (
-            <Link key={item.label} className="navlink" to={item.path || "#"}>
-              {item.label}
-            </Link>
-          )
-        )}
-      </nav>
+            ) : item.path ? (
+              <Link key={item.label} className="navlink" to={item.path}>
+                {item.label}
+              </Link>
+            ) : (
+              <span key={item.label} className="navlink navlink--static">
+                {item.label}
+              </span>
+            )
+          )}
+        </nav>
+      </div>
     </header>
   );
 }

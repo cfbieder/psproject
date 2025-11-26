@@ -59,6 +59,62 @@
   box-shadow: 0 0 0 3px rgba(15, 107, 220, 0.12);
 }
 
+.balance-date-picker__row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.balance-period-group {
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  padding: 0.85rem 0.95rem;
+  background: var(--surface-muted);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.balance-period-title {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.35rem;
+}
+
+.balance-period-pill {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 107, 220, 0.12);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.balance-period-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.balance-period-heading__title {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.balance-period-heading__subtitle {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.balance-period-summary {
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
 .generate-report-button {
   width: 100%;
   padding: 0.9rem 1.25rem;

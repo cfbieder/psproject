@@ -1,4 +1,5 @@
-import "../ui/BalanceDateSelector.css";
+import "./BalanceDateSelector.css";
+import PeriodCountSelector from "../components/PeriodCountSelector";
 
 export default function CashFlowDateSelector({
   activePeriodCount,
@@ -28,26 +29,12 @@ export default function CashFlowDateSelector({
     <div className="balance-layout">
       <aside className="balance-panel">
         <div className="balance-date-picker">
-          <label
-            htmlFor="cashflow-period-count"
-            className="balance-date-picker__label"
-          >
-            Number of Periods
-          </label>
-          <select
+          <PeriodCountSelector
             id="cashflow-period-count"
-            className="balance-date-picker__input"
             value={clampedPeriodCount}
-            onChange={(event) =>
-              onPeriodCountChange?.(Number(event.target.value))
-            }
-          >
-            {[1, 2, 3].map((count) => (
-              <option key={`cashflow-period-count-${count}`} value={count}>
-                {count}
-              </option>
-            ))}
-          </select>
+            onChange={onPeriodCountChange}
+          />
+
           {Array.from({ length: clampedPeriodCount }).map((_, index) => {
             const periodLabel = index + 1;
             return (

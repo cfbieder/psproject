@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import NavigationMenu from "../components/NavigationMenu.jsx";
 import Rest from "../js/rest.js";
 import "./PageLayout.css";
-import "../ui/BalanceDateSelector.css";
-import CashFlowReport from "../ui/CashFlowReport.jsx";
-import CashFlowDateSelector from "../ui/CashFlowDateSelector.jsx";
+import "../features/BalanceDateSelector.css";
+import CashFlowReport from "../features/CashFlowReport.jsx";
+import CashFlowDateSelectorMonthYear from "../features/CashFlowDateSelectorMonthYear.jsx";
 
 // Recursively collect paths of collapsible nodes
 const collectCollapsiblePaths = (nodes, path = [], set = new Set()) => {
@@ -59,15 +59,15 @@ const addNetCashFlowCategory = (nodes) => {
 };
 // Main Cash Flow Page Component
 export default function CashFlow() {
-  const getToday = () => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
-  };
-
   const getMonthStart = () => {
     const firstOfMonth = new Date();
     firstOfMonth.setDate(1);
     return firstOfMonth.toISOString().split("T")[0];
+  };
+  const getMonthEnd = () => {
+    const lastOfMonth = new Date();
+    lastOfMonth.setMonth(lastOfMonth.getMonth() + 1, 0);
+    return lastOfMonth.toISOString().split("T")[0];
   };
 
   const [fromDates, setFromDates] = useState(() => {
@@ -75,8 +75,8 @@ export default function CashFlow() {
     return [start, start, start];
   });
   const [toDates, setToDates] = useState(() => {
-    const today = getToday();
-    return [today, today, today];
+    const end = getMonthEnd();
+    return [end, end, end];
   });
   const [periodCount, setPeriodCount] = useState(1);
   const [reports, setReports] = useState([]);
@@ -188,7 +188,7 @@ export default function CashFlow() {
           </div>
         </div>
         <div className="balance-layout-holder">
-          <CashFlowDateSelector
+          <CashFlowDateSelectorMonthYear
             activePeriodCount={activePeriodCount}
             fromDates={fromDates}
             toDates={toDates}

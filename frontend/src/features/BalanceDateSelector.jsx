@@ -1,4 +1,5 @@
 import "./BalanceDateSelector.css";
+import PeriodCountSelector from "../components/PeriodCountSelector";
 
 export default function BalanceDateSelector({
   periodDates,
@@ -19,33 +20,29 @@ export default function BalanceDateSelector({
     <div className="balance-layout">
       <aside className="balance-panel">
         <div className="balance-date-picker">
-          <label
-            htmlFor="balance-date-period-count"
-            className="balance-date-picker__label"
-          >
-            Number of Periods
-          </label>
-          <select
+          <PeriodCountSelector
             id="balance-date-period-count"
-            className="balance-date-picker__input"
             value={clampedPeriodCount}
-            onChange={(event) =>
-              onPeriodCountChange?.(Number(event.target.value))
-            }
-          >
-            {[1, 2, 3].map((count) => (
-              <option key={`balance-period-count-${count}`} value={count}>
-                {count}
-              </option>
-            ))}
-          </select>
+            onChange={onPeriodCountChange}
+          />
           {Array.from({ length: clampedPeriodCount }).map((_, index) => {
             const periodLabel = index + 1;
             const inputId = `balance-date-period-${periodLabel}`;
             return (
-              <div key={inputId}>
+              <div key={inputId} className="balance-period-group">
+                <div className="balance-period-title">
+                  <span className="balance-period-pill">{periodLabel}</span>
+                  <div className="balance-period-heading">
+                    <div className="balance-period-heading__title">
+                      {`Period ${periodLabel}`}
+                    </div>
+                    <div className="balance-period-heading__subtitle">
+                      {`Balance Date: ${normalizedDates[index] ?? ""}`}
+                    </div>
+                  </div>
+                </div>
                 <label htmlFor={inputId} className="balance-date-picker__label">
-                  {`Balance Date Period ${periodLabel}`}
+                  Balance Date
                 </label>
                 <input
                   id={inputId}

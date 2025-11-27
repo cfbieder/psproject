@@ -14,7 +14,7 @@ console.log("[DA] mode: %s", mode);
 // Library for MongoDB
 var mongoose = require("../components/node_modules/mongoose");
 const DataAnalyzerUtils = require("../server/src/services/dataAnalyzerUtils");
-const BalanceSheetFetcher = require("../server/src/services/balanceSheetFetcher");
+const BalanceSheetFetcher = require("../server/src/services/reporting/balanceSheetFetcher");
 
 // Default path for account names JSON file
 const DEFAULT_ACCOUNT_NAMES_PATH =
@@ -146,7 +146,7 @@ async function main() {
     return `${month}-${day}-${date.getFullYear()}`;
   };
 
-  const cashFlowFetcher = require("../server/src/services/cashFLowFetcher");
+  const cashFlowFetcher = require("../server/src/services/reporting/cashFLowFetcher");
   const cff = new cashFlowFetcher();
   cff.getCategoryBaseAmountSum(category, startDate, endDate).then((sum) => {
     console.log(

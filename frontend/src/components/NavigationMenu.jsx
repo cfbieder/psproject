@@ -3,7 +3,13 @@ import banner from "../assets/banner.png";
 import "./NavigationMenu.css";
 
 const menuItems = [
-  { label: "File", submenu: [{ label: "Upload PS", path: "/upload-ps" }] },
+  {
+    label: "Database",
+    submenu: [
+      { label: "Upload PS", path: "/upload-ps" },
+      { label: "Refresh PS", path: "/refresh-ps" },
+    ],
+  },
   { label: "Dashboard" },
   {
     label: "Reports",

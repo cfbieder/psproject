@@ -1,5 +1,5 @@
 const express = require("express");
-const BalanceSheetFetcher = require("../services/balanceSheetFetcher");
+const BalanceSheetFetcher = require("../services/reporting/balanceSheetFetcher");
 
 const router = express.Router();
 const balanceSheetFetcher = new BalanceSheetFetcher();

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import NavigationMenu from "../components/NavigationMenu.jsx";
 import handleUpload from "../js/handleUpload.js";
 import Rest from "../js/rest.js";
@@ -17,8 +17,47 @@ export default function UploadPS() {
   const [hasFileSelected, setHasFileSelected] = useState(false);
   const [analyzeStatus, setAnalyzeStatus] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [lastIngestStatus, setLastIngestStatus] = useState(null);
 
-  //Handler Functions
+  const fetchLastIngest = useCallback(async () => {
+    try {
+      const appdata = await Rest.fetchJson("/api/getappdata");
+      const records = Array.isArray(appdata) ? appdata : [];
+      const ingestDates = records
+        .map((item) => item?.lastIngest)
+        .map((date) => (date ? new Date(date) : null))
+        .filter(
+          (date) => date instanceof Date && !Number.isNaN(date.getTime())
+        );
+
+      if (ingestDates.length === 0) {
+        setLastIngestStatus({
+          type: "info",
+          message: "No ingest has been recorded yet.",
+        });
+        return;
+      }
+
+      const latestIngest = ingestDates.reduce(
+        (latest, current) => (current > latest ? current : latest),
+        ingestDates[0]
+      );
+
+      setLastIngestStatus({
+        type: "info",
+        message: `Last ingest: ${latestIngest.toLocaleString()}`,
+      });
+    } catch (error) {
+      setLastIngestStatus({
+        type: "error",
+        message: error?.message ?? "Unable to load last ingest date.",
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLastIngest();
+  }, [fetchLastIngest]);
 
   // Handle the upload and ingestion of PS data
   const handleUploadClick = async () => {
@@ -52,6 +91,7 @@ export default function UploadPS() {
         type: "success",
         message: `PS ingest complete: ${inserted} inserted, ${updated} updated, ${skipped} skipped.`,
       });
+      fetchLastIngest();
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -91,6 +131,7 @@ export default function UploadPS() {
         message:
           "All PS records cleared from MongoDB (clear operation complete).",
       });
+      fetchLastIngest();
     } catch (error) {
       setClearStatus({
         type: "error",
@@ -156,8 +197,7 @@ export default function UploadPS() {
           ? misAcct.missingCount
           : missingAccounts.length;
       const unknownAccountCount =
-        Number.isFinite(missCOAact.unknownCount) &&
-        missCOAact.unknownCount >= 0
+        Number.isFinite(missCOAact.unknownCount) && missCOAact.unknownCount >= 0
           ? missCOAact.unknownCount
           : unknownAccounts.length;
       const missingCategoryCount =
@@ -165,14 +205,15 @@ export default function UploadPS() {
           ? misCat.missingCount
           : missingCategories.length;
       const unknownCategoryCount =
-        Number.isFinite(missCOACat.unknownCount) &&
-        missCOACat.unknownCount >= 0
+        Number.isFinite(missCOACat.unknownCount) && missCOACat.unknownCount >= 0
           ? missCOACat.unknownCount
           : unknownCategories.length;
 
       const details = [];
       if (missingAccounts.length) {
-        details.push(`Missing from COA (accounts): ${missingAccounts.join(", ")}`);
+        details.push(
+          `Missing from COA (accounts): ${missingAccounts.join(", ")}`
+        );
       }
       if (unknownAccounts.length) {
         details.push(
@@ -228,6 +269,7 @@ export default function UploadPS() {
           <p className="page__description">Upload Status</p>
           <ul className="upload-guidance">
             <UploadFeedback
+              lastIngestStatus={lastIngestStatus}
               uploadStatus={uploadStatus}
               clearStatus={clearStatus}
               ingestStatus={ingestStatus}

@@ -4,7 +4,7 @@ const path = require("path");
 const DataGateway = require("../../../components/helpers/DataGateway");
 const PsCsvIngestor = require("../services/psCsvIngestor");
 const DataAnalyzerUtils = require("../services/dataAnalyzerUtils");
-const BalanceSheetFetcher = require("../services/balanceSheetFetcher");
+const BalanceSheetFetcher = require("../services/reporting/balanceSheetFetcher");
 const PSdata = require("../../../components/models/PSdata");
 
 const router = express.Router();
@@ -28,6 +28,9 @@ const csvBodyParser = express.text({
 router.post("/ingest-ps", async (req, res) => {
   try {
     const ingestResult = await psCsvIngestor.ingestPsTransactionsFromCsv();
+    await PSdata.db
+      .collection("appdata")
+      .updateOne({}, { $set: { lastIngest: new Date() } }, { upsert: true });
     const insertedCount =
       Number.isFinite(ingestResult?.insertedCount) &&
       ingestResult?.insertedCount >= 0
@@ -120,10 +123,7 @@ const analyzePsHandler = async (req, res) => {
       coaPath
     );
     console.log("[DA] Unknown COA Accounts: ", missCOAact);
-    await DataAnalyzerUtils.writeCategoryNamesFile(
-      PSdata,
-      categoryNamesPath
-    );
+    await DataAnalyzerUtils.writeCategoryNamesFile(PSdata, categoryNamesPath);
     const misCat = DataAnalyzerUtils.reportMissingCategories(
       categoryNamesPath,
       coaPath
@@ -150,5 +150,17 @@ const analyzePsHandler = async (req, res) => {
 
 router.post("/analyze-ps", analyzePsHandler);
 router.get("/analyze-ps", analyzePsHandler);
+
+router.get("/getappdata", async (req, res) => {
+  try {
+    const appdata = await PSdata.db.collection("appdata").find({}).toArray();
+    return res.json(appdata);
+  } catch (error) {
+    console.error("[GET-APPDATA] Failed to fetch appdata:", error);
+    return res.status(500).json({
+      error: "Failed to fetch appdata from MongoDB",
+    });
+  }
+});
 
 module.exports = router;

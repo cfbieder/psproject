@@ -2,3 +2,4 @@ node_modules/
 mongo_data/
 .env-cmdrc
 .DS_Store
+old/

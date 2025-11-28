@@ -215,14 +215,26 @@
     "original_payee": "AUTOPAY PAYMENT - THANK YOU",
     "date": "2025-11-27",
     "upload_source": "data_feed",
-    "category": null,
+    "category": {
+      "id": 11112442,
+      "title": "Transfer - Credit Card Payments",
+      "colour": "#FFEB3B",
+      "is_transfer": true,
+      "is_bill": false,
+      "refund_behaviour": "credits_are_refunds",
+      "children": [],
+      "parent_id": 11112439,
+      "roll_up": false,
+      "created_at": "2022-11-26T13:11:00Z",
+      "updated_at": "2025-06-17T05:34:49Z"
+    },
     "closing_balance": -453.92,
     "cheque_number": null,
     "memo": null,
     "amount": 94.22,
     "amount_in_base_currency": 94.22,
     "type": "credit",
-    "is_transfer": null,
+    "is_transfer": true,
     "needs_review": true,
     "status": "posted",
     "note": null,
@@ -265,7 +277,7 @@
       "updated_at": "2025-11-28T13:50:56Z"
     },
     "created_at": "2025-11-28T13:50:54Z",
-    "updated_at": "2025-11-28T13:50:54Z"
+    "updated_at": "2025-11-28T17:21:10Z"
   },
   {
     "id": 1545460374,
@@ -343,7 +355,19 @@
     "original_payee": "OBCY 00000092194573160",
     "date": "2025-11-27",
     "upload_source": "data_feed",
-    "category": null,
+    "category": {
+      "id": 11111890,
+      "title": "Kasia Spending",
+      "colour": "#9c27b0",
+      "is_transfer": false,
+      "is_bill": true,
+      "refund_behaviour": "credits_are_refunds",
+      "children": [],
+      "parent_id": 16619114,
+      "roll_up": false,
+      "created_at": "2022-11-26T11:19:24Z",
+      "updated_at": "2025-06-17T05:34:49Z"
+    },
     "closing_balance": 43494.94,
     "cheque_number": null,
     "memo": null,
@@ -351,7 +375,7 @@
     "amount_in_base_currency": -82.29,
     "type": "debit",
     "is_transfer": null,
-    "needs_review": true,
+    "needs_review": false,
     "status": "posted",
     "note": null,
     "labels": [],
@@ -393,7 +417,7 @@
       "updated_at": "2025-11-27T22:13:34Z"
     },
     "created_at": "2025-11-27T22:13:33Z",
-    "updated_at": "2025-11-27T22:13:33Z"
+    "updated_at": "2025-11-28T17:21:03Z"
   },
   {
     "id": 1543979211,
@@ -437,8 +461,8 @@
       "include_in_net_worth": true,
       "currency_code": "pln",
       "current_balance": -100000,
-      "current_balance_in_base_currency": -27361.47,
-      "current_balance_exchange_rate": 0.2736147296659109,
+      "current_balance_in_base_currency": -27394.66,
+      "current_balance_exchange_rate": 0.273946559053153,
       "current_balance_date": "2025-11-28",
       "current_balance_source": "closing_balance_as_today",
       "data_feeds_balance_type": "balance",
@@ -751,7 +775,19 @@
     "original_payee": "00000092163154913",
     "date": "2025-11-26",
     "upload_source": "data_feed",
-    "category": null,
+    "category": {
+      "id": 11111890,
+      "title": "Kasia Spending",
+      "colour": "#9c27b0",
+      "is_transfer": false,
+      "is_bill": true,
+      "refund_behaviour": "credits_are_refunds",
+      "children": [],
+      "parent_id": 16619114,
+      "roll_up": false,
+      "created_at": "2022-11-26T11:19:24Z",
+      "updated_at": "2025-06-17T05:34:49Z"
+    },
     "closing_balance": 43794.94,
     "cheque_number": null,
     "memo": null,
@@ -759,7 +795,7 @@
     "amount_in_base_currency": -51.77,
     "type": "debit",
     "is_transfer": null,
-    "needs_review": true,
+    "needs_review": false,
     "status": "posted",
     "note": null,
     "labels": [],
@@ -801,7 +837,7 @@
       "updated_at": "2025-11-27T22:13:34Z"
     },
     "created_at": "2025-11-26T22:13:56Z",
-    "updated_at": "2025-11-26T22:13:56Z"
+    "updated_at": "2025-11-28T17:21:04Z"
   },
   {
     "id": 1544210133,

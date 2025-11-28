@@ -137,7 +137,6 @@ class PsCsvIngestor {
         return;
       }
       try {
-        console.log("[DA] Processing batch of", batch.length, "records");
         const ids = [];
         for (const record of batch) {
           if (record.ID) {
@@ -148,9 +147,7 @@ class PsCsvIngestor {
         const existingDocs = uniqueIds.length
           ? await PSdata.find({ ID: { $in: uniqueIds } }).lean()
           : [];
-        const existingMap = new Map(
-          existingDocs.map((doc) => [doc.ID, doc])
-        );
+        const existingMap = new Map(existingDocs.map((doc) => [doc.ID, doc]));
         const operations = [];
         const pendingInserts = new Map();
         let batchAdded = 0;

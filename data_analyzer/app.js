@@ -13,22 +13,9 @@ console.log("[DA] mode: %s", mode);
 
 // Library for MongoDB
 var mongoose = require("../components/node_modules/mongoose");
-const DataAnalyzerUtils = require("../server/src/services/dataAnalyzerUtils");
+const DataAnalyzerUtils = require("../server/src/services/retrieval/dataAnalyzerUtils");
 const BalanceSheetFetcher = require("../server/src/services/reporting/balanceSheetFetcher");
-
-// Default path for account names JSON file
-const DEFAULT_ACCOUNT_NAMES_PATH =
-  process.env.ACCOUNT_NAMES_PATH ||
-  path.join(__dirname, "../components/data/account_names.json");
-
-// Default path for category names JSON file
-const DEFAULT_CATEGORY_NAMES_PATH =
-  process.env.CATEGORY_NAMES_PATH ||
-  path.join(__dirname, "../components/data/category _names.json");
-
-// Default path for COA JSON file
-const DEFAULT_COA_PATH =
-  process.env.COA_PATH || path.join(__dirname, "../components/data/coa.json");
+const { dataPaths } = require("../server/src/utils/dataPaths");
 
 // URL of MongoDB server
 var db = process.env.MONGO_URI;
@@ -42,14 +29,14 @@ const DataGateway = require("../components/helpers/DataGateway");
 const gateway = new DataGateway();
 
 //CSV Ingestor
-const PsCsvIngestor = require("../server/src/services/psCsvIngestor");
+const PsCsvIngestor = require("../server/src/services/retrieval/psCsvIngestor");
 const psCsvIngestor = new PsCsvIngestor({ gateway });
 const balanceSheetFetcher = new BalanceSheetFetcher();
-const accountNamesPath = DEFAULT_ACCOUNT_NAMES_PATH;
+const accountNamesPath = dataPaths.accountNames;
 //const accountNamesPath = balanceSheetFetcher.accountNamesPath;
-const coaPath = DEFAULT_COA_PATH;
+const coaPath = dataPaths.coa;
 //const coaPath = balanceSheetFetcher.coaPath;
-const categoryNamesPath = DEFAULT_CATEGORY_NAMES_PATH;
+const categoryNamesPath = dataPaths.categoryNames;
 
 console.log("[DA] Using account/coa paths:", accountNamesPath, coaPath);
 

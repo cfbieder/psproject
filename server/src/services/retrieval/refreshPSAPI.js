@@ -5,9 +5,9 @@ const {
   convertTransactionsToPSdata,
   mapTransactionToPsData,
 } = require("./psdataConverter");
-const mongoose = require("../../../components/node_modules/mongoose");
+const mongoose = require("../../../../components/node_modules/mongoose");
 const PSdata = require("../../../../components/models/PSdata");
-const { mongo } = require("mongoose");
+const { tempFiles, ensureTempDir } = require("../../utils/dataPaths");
 
 const PS_API_KEY = process.env.PS_API_KEY;
 const PS_USER_ID = process.env.PS_USER_ID;
@@ -45,17 +45,14 @@ if (!PS_API_KEY) {
 
 pocketsmith.auth(PS_API_KEY);
 
-/*********************************************
- * File Paths
- **********************************************/
-const TEMP_DIR = path.resolve(__dirname, "../../../components/data/.temp");
+const TEMP_DIR = ensureTempDir();
 const OUTPUT_FILES = {
-  all: path.join(TEMP_DIR, "all_transactions.json"),
-  updated: path.join(TEMP_DIR, "updated_transactions.json"),
-  new: path.join(TEMP_DIR, "new_transactions.json"),
-  existing: path.join(TEMP_DIR, "existing_transactions.json"),
-  mongoImportReport: path.join(TEMP_DIR, "mongo_import_report.json"),
-  mongoUpdateReport: path.join(TEMP_DIR, "mongo_update_report.json"),
+  all: tempFiles.allTransactions,
+  updated: tempFiles.updatedTransactions,
+  new: tempFiles.newTransactions,
+  existing: tempFiles.existingTransactions,
+  mongoImportReport: tempFiles.mongoImportReport,
+  mongoUpdateReport: tempFiles.mongoUpdateReport,
 };
 
 /*********************************************
@@ -594,7 +591,6 @@ function logTransactionFileCounts() {
   for (const [key, filePath] of Object.entries(OUTPUT_FILES)) {
     counts[key] = countEntries(filePath);
   }
-
   return counts;
 }
 /*******************************************************

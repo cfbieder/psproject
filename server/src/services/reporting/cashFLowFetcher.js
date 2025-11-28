@@ -9,6 +9,7 @@
 const fs = require("fs");
 const path = require("path");
 const PSdata = require("../../../../components/models/PSdata");
+const { dataPaths, resolveDataPath } = require("../../utils/dataPaths");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../../../..");
 const resolveFromRoot = (value, fallbackRelative) => {
@@ -20,30 +21,9 @@ const resolveFromRoot = (value, fallbackRelative) => {
   }
   return path.join(PROJECT_ROOT, fallbackRelative);
 };
+const DEFAULT_CATEGORY_NAMES_PATH = dataPaths.categoryNames;
 
-const resolveDataPath = (envValue, fallbackRelative) => {
-  const fallback = path.join(PROJECT_ROOT, fallbackRelative);
-  const normalized = typeof envValue === "string" ? envValue.trim() : "";
-  if (normalized) {
-    const candidate = path.isAbsolute(normalized)
-      ? normalized
-      : path.resolve(PROJECT_ROOT, normalized);
-    if (fs.existsSync(candidate)) {
-      return candidate;
-    }
-  }
-  return fallback;
-};
-
-const DEFAULT_CATEGORY_NAMES_PATH = resolveDataPath(
-  process.env.CATEGORY_NAMES_PATH,
-  "components/data/category_names.json"
-);
-
-const DEFAULT_COA_PATH = resolveDataPath(
-  process.env.COA_PATH,
-  "components/data/coa.json"
-);
+const DEFAULT_COA_PATH = dataPaths.coa;
 
 const DEFAULT_CASH_FLOW_REPORT_PATH = resolveFromRoot(
   process.env.CASH_FLOW_REPORT_PATH,
@@ -184,9 +164,7 @@ class CashFlowFetcher {
     const end = toDateValue(toDate);
 
     const filePath = filename
-      ? path.isAbsolute(filename)
-        ? filename
-        : path.join(PROJECT_ROOT, filename)
+      ? resolveDataPath(filename, "category_names.json")
       : DEFAULT_CATEGORY_NAMES_PATH;
 
     const categoryData = JSON.parse(fs.readFileSync(filePath, "utf8"));

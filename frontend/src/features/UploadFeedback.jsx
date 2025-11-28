@@ -26,6 +26,7 @@ const renderStatusItem = (status, includeDetails = false) => {
 
 export default function UploadFeedback({
   lastIngestStatus,
+  lastRefreshStatus,
   uploadStatus,
   clearStatus,
   ingestStatus,
@@ -34,6 +35,7 @@ export default function UploadFeedback({
   return (
     <>
       {renderStatusItem(lastIngestStatus)}
+      {renderStatusItem(lastRefreshStatus)}
       {renderStatusItem(uploadStatus)}
       {renderStatusItem(clearStatus)}
       {renderStatusItem(ingestStatus)}

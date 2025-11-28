@@ -12,16 +12,22 @@
 const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
-const { toNumber, toDate } = require("../../../components/helpers/utils");
-const PSdata = require("../../../components/models/PSdata");
+const { toNumber, toDate } = require("../../../../components/helpers/utils");
+const PSdata = require("../../../../components/models/PSdata");
+const {
+  dataPaths,
+  resolveDataPath,
+  ensureComponentsDataDir,
+} = require("../../utils/dataPaths");
 
 // PsCsvIngestor class for ingesting PS CSV data into MongoDB
 class PsCsvIngestor {
   constructor({ gateway, csvPath }) {
     this.gateway = gateway;
-    this.csvPath =
-      csvPath ||
-      path.resolve(__dirname, "../../../components/data/ps-transactions.csv");
+    ensureComponentsDataDir();
+    this.csvPath = csvPath
+      ? resolveDataPath(csvPath, "ps-transactions.csv")
+      : dataPaths.psTransactions;
   }
 
   // Simple CSV line parser handling quoted fields

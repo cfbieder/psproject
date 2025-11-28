@@ -1,28 +1,29 @@
 const express = require("express");
 const fs = require("node:fs/promises");
-const path = require("path");
 const DataGateway = require("../../../components/helpers/DataGateway");
-const PsCsvIngestor = require("../services/psCsvIngestor");
-const DataAnalyzerUtils = require("../services/dataAnalyzerUtils");
-const BalanceSheetFetcher = require("../services/reporting/balanceSheetFetcher");
+const PsCsvIngestor = require("../services/retrieval/psCsvIngestor");
+const DataAnalyzerUtils = require("../services/retrieval/dataAnalyzerUtils");
 const PSdata = require("../../../components/models/PSdata");
+const { dataPaths, ensureComponentsDataDir } = require("../utils/dataPaths");
+const {
+  processTransactions,
+  logTransactionFileCounts,
+} = require("../services/retrieval/refreshPSAPI");
 
 const router = express.Router();
 const gateway = new DataGateway();
 const psCsvIngestor = new PsCsvIngestor({ gateway });
-const balanceSheetFetcher = new BalanceSheetFetcher();
-const csvFilePath = path.resolve(
-  __dirname,
-  "../../../components/data/ps-transactions.csv"
-);
-const categoryNamesPath = path.resolve(
-  __dirname,
-  "../../../components/data/category_names.json"
-);
+const csvFilePath = dataPaths.psTransactions;
 const csvBodyParser = express.text({
   type: ["text/csv", "text/plain", "application/octet-stream"],
   limit: "10mb",
 });
+
+ensureComponentsDataDir();
+
+const DEFAULT_ACCOUNT_NAMES_PATH = dataPaths.accountNames;
+const DEFAULT_COA_PATH = dataPaths.coa;
+const DEFAULT_CATEGORY_NAMES_PATH = dataPaths.categoryNames;
 
 // Ingest PS transactions from CSV into MongoDB
 router.post("/ingest-ps", async (req, res) => {
@@ -95,43 +96,49 @@ router.post("/upload-ps", csvBodyParser, async (req, res) => {
 
 const analyzePsHandler = async (req, res) => {
   try {
-    const accountNamesPath = balanceSheetFetcher.accountNamesPath;
-    const coaPath = balanceSheetFetcher.coaPath;
     console.log(
       "[ANALYZE-PS] Using account/coa paths:",
-      accountNamesPath,
-      coaPath
+      DEFAULT_ACCOUNT_NAMES_PATH,
+      DEFAULT_COA_PATH
     );
 
     // Write account names file and report missing/unknown accounts
 
-    await DataAnalyzerUtils.writeAccountNamesFile(PSdata, accountNamesPath);
+    await DataAnalyzerUtils.writeAccountNamesFile(
+      PSdata,
+      DEFAULT_ACCOUNT_NAMES_PATH
+    );
 
-    const accountNamesData = DataAnalyzerUtils.readJson(accountNamesPath);
+    const accountNamesData = DataAnalyzerUtils.readJson(
+      DEFAULT_ACCOUNT_NAMES_PATH
+    );
     const accountNames = Object.keys(accountNamesData).filter(
       (name) => typeof name === "string" && name.length > 0
     );
-    const coaData = DataAnalyzerUtils.readJson(coaPath);
+    const coaData = DataAnalyzerUtils.readJson(DEFAULT_COA_PATH);
     const coaAccounts = DataAnalyzerUtils.collectCoaStrings(coaData);
     const misAcct = DataAnalyzerUtils.reportMissingAccounts(
-      accountNamesPath,
-      coaPath
+      DEFAULT_ACCOUNT_NAMES_PATH,
+      DEFAULT_COA_PATH
     );
     console.log("[DA] Missing Accounts: ", misAcct);
     const missCOAact = DataAnalyzerUtils.reportUnknownCoaAccounts(
-      accountNamesPath,
-      coaPath
+      DEFAULT_ACCOUNT_NAMES_PATH,
+      DEFAULT_COA_PATH
     );
     console.log("[DA] Unknown COA Accounts: ", missCOAact);
-    await DataAnalyzerUtils.writeCategoryNamesFile(PSdata, categoryNamesPath);
+    await DataAnalyzerUtils.writeCategoryNamesFile(
+      PSdata,
+      DEFAULT_CATEGORY_NAMES_PATH
+    );
     const misCat = DataAnalyzerUtils.reportMissingCategories(
-      categoryNamesPath,
-      coaPath
+      DEFAULT_CATEGORY_NAMES_PATH,
+      DEFAULT_COA_PATH
     );
     console.log("[DA] Missing Categories: ", misCat);
     const missCOACat = DataAnalyzerUtils.reportUnknownCoaCategories(
-      categoryNamesPath,
-      coaPath
+      DEFAULT_CATEGORY_NAMES_PATH,
+      DEFAULT_COA_PATH
     );
     console.log("[DA] Unknown COA Categories: ", missCOACat);
     return res.json({
@@ -160,6 +167,46 @@ router.get("/getappdata", async (req, res) => {
     return res.status(500).json({
       error: "Failed to fetch appdata from MongoDB",
     });
+  }
+});
+
+router.post("/appdata/last-refresh", async (req, res) => {
+  try {
+    const now = new Date();
+    const result =
+      (await PSdata.db
+        .collection("appdata")
+        .updateMany({}, { $set: { lastRefresh: now } }, { upsert: true })) ??
+      {};
+    const {
+      matchedCount = 0,
+      modifiedCount = 0,
+      upsertedCount = 0,
+      upsertedId = null,
+    } = result;
+
+    return res.json({
+      matchedCount,
+      modifiedCount,
+      upsertedCount,
+      upsertedId,
+      lastRefresh: now,
+    });
+  } catch (error) {
+    console.error("[SET-LAST-REFRESH] Failed to update appdata:", error);
+    return res.status(500).json({
+      error: "Failed to update appdata refresh timestamp",
+    });
+  }
+});
+
+router.post("/refresh-ps", async (req, res) => {
+  try {
+    await processTransactions();
+    return res.json(logTransactionFileCounts());
+  } catch (error) {
+    console.error("[REFRESH-PS] Failed to refresh PS data:", error);
+    return res.status(500).json({ error: "Unable to refresh PS data" });
   }
 });
 

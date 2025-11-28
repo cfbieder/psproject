@@ -16,8 +16,39 @@
 
 const fs = require("fs");
 const path = require("path");
+const {
+  PROJECT_ROOT,
+  COMPONENTS_DATA_DIR,
+  resolveDataPath,
+} = require("../../utils/dataPaths");
 
-const PROJECT_ROOT = path.resolve(__dirname, "../../..");
+const resolveInputPath = (filePath) => {
+  const normalized =
+    typeof filePath === "string" && filePath.trim().length > 0
+      ? filePath.trim()
+      : null;
+  if (!normalized) {
+    throw new Error("A valid file path is required");
+  }
+
+  const candidate = path.isAbsolute(normalized)
+    ? normalized
+    : path.resolve(PROJECT_ROOT, normalized);
+
+  if (fs.existsSync(candidate)) {
+    return candidate;
+  }
+
+  const componentsCandidate = path.join(
+    COMPONENTS_DATA_DIR,
+    path.basename(normalized)
+  );
+  if (fs.existsSync(componentsCandidate)) {
+    return componentsCandidate;
+  }
+
+  return candidate;
+};
 
 // USD Currency Formatter
 const usdCurrencyFormatter = new Intl.NumberFormat("en-US", {
@@ -52,6 +83,7 @@ class DataAnalyzerUtils {
       }
     }
 
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.writeFileSync(outputPath, JSON.stringify(accounts, null, 2) + "\n");
     console.log("[DA] Account names saved to %s", outputPath);
   }
@@ -72,24 +104,14 @@ class DataAnalyzerUtils {
       }
     }
 
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.writeFileSync(outputPath, JSON.stringify(categories, null, 2) + "\n");
     console.log("[DA] Category names saved to %s", outputPath);
   }
 
   // Reads and parses a JSON file from the given path
   static readJson(filePath) {
-    const normalized =
-      typeof filePath === "string" && filePath.trim().length > 0
-        ? filePath.trim()
-        : null;
-    const resolved = normalized
-      ? path.isAbsolute(normalized)
-        ? normalized
-        : path.join(PROJECT_ROOT, normalized)
-      : null;
-    if (!resolved) {
-      throw new Error("A valid file path is required");
-    }
+    const resolved = resolveInputPath(filePath);
     return JSON.parse(fs.readFileSync(resolved, "utf8"));
   }
 
@@ -137,8 +159,20 @@ class DataAnalyzerUtils {
    ************************************************************/
   // Reports account names that are missing from the COA file
   static reportMissingAccounts(accountNamesPath, coaPath) {
-    const accountNamesData = this.readJson(accountNamesPath);
-    const coaData = this.readJson(coaPath);
+    const accountNamesFile = resolveDataPath(
+      typeof accountNamesPath === "string" && accountNamesPath.trim()
+        ? accountNamesPath
+        : null,
+      "account_names.json"
+    );
+    const coaFile = resolveDataPath(
+      typeof coaPath === "string" && coaPath.trim() ? coaPath : null,
+      "coa.json"
+    );
+
+    const accountNamesData = this.readJson(accountNamesFile);
+    const coaData = this.readJson(coaFile);
+
     const coaAccounts = this.collectCoaStrings(coaData);
 
     const missing = [];
@@ -157,8 +191,19 @@ class DataAnalyzerUtils {
 
   // Reports category names that are missing from the COA file
   static reportMissingCategories(categoryNamesPath, coaPath) {
-    const categoryNamesData = this.readJson(categoryNamesPath);
-    const coaData = this.readJson(coaPath);
+    const categoryNamesFile = resolveDataPath(
+      typeof categoryNamesPath === "string" && categoryNamesPath.trim()
+        ? categoryNamesPath
+        : null,
+      "category_names.json"
+    );
+    const coaFile = resolveDataPath(
+      typeof coaPath === "string" && coaPath.trim() ? coaPath : null,
+      "coa.json"
+    );
+
+    const categoryNamesData = this.readJson(categoryNamesFile);
+    const coaData = this.readJson(coaFile);
     const profitLossEntry =
       Array.isArray(coaData) &&
       coaData.find(
@@ -195,13 +240,23 @@ class DataAnalyzerUtils {
 
   // Reports COA accounts that are unknown in the account names file
   static reportUnknownCoaAccounts(accountNamesPath, coaPath) {
-    const accountNamesData = this.readJson(accountNamesPath);
+    const accountNamesFile = resolveDataPath(
+      typeof accountNamesPath === "string" && accountNamesPath.trim()
+        ? accountNamesPath
+        : null,
+      "account_names.json"
+    );
+    const accountNamesData = this.readJson(accountNamesFile);
     const knownAccounts = new Set(
       Object.keys(accountNamesData).filter(
         (name) => typeof name === "string" && name.length > 0
       )
     );
-    const coaData = this.readJson(coaPath);
+    const coaFile = resolveDataPath(
+      typeof coaPath === "string" && coaPath.trim() ? coaPath : null,
+      "coa.json"
+    );
+    const coaData = this.readJson(coaFile);
     const balanceSheetEntry =
       Array.isArray(coaData) &&
       coaData.find(
@@ -235,13 +290,23 @@ class DataAnalyzerUtils {
 
   // Reports COA categories that are unknown in the category names file
   static reportUnknownCoaCategories(categoryNamesPath, coaPath) {
-    const categoryNamesData = this.readJson(categoryNamesPath);
+    const categoryNamesFile = resolveDataPath(
+      typeof categoryNamesPath === "string" && categoryNamesPath.trim()
+        ? categoryNamesPath
+        : null,
+      "category_names.json"
+    );
+    const categoryNamesData = this.readJson(categoryNamesFile);
     const knownCategories = new Set(
       Object.keys(categoryNamesData).filter(
         (name) => typeof name === "string" && name.length > 0
       )
     );
-    const coaData = this.readJson(coaPath);
+    const coaFile = resolveDataPath(
+      typeof coaPath === "string" && coaPath.trim() ? coaPath : null,
+      "coa.json"
+    );
+    const coaData = this.readJson(coaFile);
     const profitLossEntry =
       Array.isArray(coaData) &&
       coaData.find(

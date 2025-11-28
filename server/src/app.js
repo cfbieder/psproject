@@ -33,6 +33,7 @@ app.get("/", (req, res) => {
       "/api/upload-ps",
       "/api/ingest-ps",
       "/api/analyze-ps",
+      "/api/refresh-ps",
     ],
   });
 });

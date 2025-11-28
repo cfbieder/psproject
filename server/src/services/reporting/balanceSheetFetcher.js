@@ -39,6 +39,7 @@ const path = require("path");
 const frankfurterExchangeRates = require("../../utils/frankfurterExchangeRates");
 const getPsDataModel = () =>
   require("../../../../components/models/PSdata");
+const { dataPaths, resolveDataPath } = require("../../utils/dataPaths");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../../../..");
 const resolveFromRoot = (value, fallbackRelative) => {
@@ -50,29 +51,8 @@ const resolveFromRoot = (value, fallbackRelative) => {
   }
   return path.join(PROJECT_ROOT, fallbackRelative);
 };
-
-const resolveDataPath = (envValue, fallbackRelative) => {
-  const fallback = path.join(PROJECT_ROOT, fallbackRelative);
-  const normalized = typeof envValue === "string" ? envValue.trim() : "";
-  if (normalized) {
-    const candidate = path.isAbsolute(normalized)
-      ? normalized
-      : path.resolve(PROJECT_ROOT, normalized);
-    if (fs.existsSync(candidate)) {
-      return candidate;
-    }
-  }
-  return fallback;
-};
-
-const DEFAULT_ACCOUNT_NAMES_PATH = resolveDataPath(
-  process.env.ACCOUNT_NAMES_PATH,
-  "components/data/account_names.json"
-);
-const DEFAULT_COA_PATH = resolveDataPath(
-  process.env.COA_PATH,
-  "components/data/coa.json"
-);
+const DEFAULT_ACCOUNT_NAMES_PATH = dataPaths.accountNames;
+const DEFAULT_COA_PATH = dataPaths.coa;
 
 console.log("Using COA Path:", process.env.ACCOUNT_NAMES_PATH);
 
@@ -90,13 +70,10 @@ class BalanceSheetFetcher {
     this.exchangeRateProvider =
       exchangeRateProvider || frankfurterExchangeRates;
     this.accountNamesPath = accountNamesPath
-      ? resolveDataPath(
-          accountNamesPath,
-          "components/data/account_names.json"
-        )
+      ? resolveDataPath(accountNamesPath, "account_names.json")
       : DEFAULT_ACCOUNT_NAMES_PATH;
     this.coaPath = coaPath
-      ? resolveDataPath(coaPath, "components/data/coa.json")
+      ? resolveDataPath(coaPath, "coa.json")
       : DEFAULT_COA_PATH;
   }
 

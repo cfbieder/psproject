@@ -1,3 +1,9 @@
+/*************************************************************
+ * RefreshPS.jsx
+ * Page for refreshing PocketSmith data using API calls.
+ *
+ *************************************************************/
+
 import { useCallback, useEffect, useState } from "react";
 import NavigationMenu from "../components/NavigationMenu.jsx";
 import UploadFeedback from "../features/UploadFeedback.jsx";
@@ -6,6 +12,7 @@ import "./PageLayout.css";
 
 export default function RefreshPS() {
   const [lastIngestStatus, setLastIngestStatus] = useState(null);
+  const [lastRefreshStatus, setLastRefreshStatus] = useState(null);
   const [refreshStatus, setRefreshStatus] = useState(null);
   const [analyzeStatus, setAnalyzeStatus] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -15,34 +22,55 @@ export default function RefreshPS() {
     try {
       const appdata = await Rest.fetchJson("/api/getappdata");
       const records = Array.isArray(appdata) ? appdata : [];
-      const ingestDates = records
-        .map((item) => item?.lastIngest)
-        .map((date) => (date ? new Date(date) : null))
-        .filter(
-          (date) => date instanceof Date && !Number.isNaN(date.getTime())
-        );
+      const parseDates = (field) =>
+        records
+          .map((item) => item?.[field])
+          .map((date) => (date ? new Date(date) : null))
+          .filter(
+            (date) => date instanceof Date && !Number.isNaN(date.getTime())
+          );
+      const latestDate = (dates) =>
+        dates.length === 0
+          ? null
+          : dates.reduce(
+              (latest, current) => (current > latest ? current : latest),
+              dates[0]
+            );
 
-      if (ingestDates.length === 0) {
-        setLastIngestStatus({
-          type: "info",
-          message: "No ingest has been recorded yet.",
-        });
-        return;
-      }
+      const latestIngest = latestDate(parseDates("lastIngest"));
+      const latestRefresh = latestDate(parseDates("lastRefresh"));
 
-      const latestIngest = ingestDates.reduce(
-        (latest, current) => (current > latest ? current : latest),
-        ingestDates[0]
+      setLastIngestStatus(
+        latestIngest
+          ? {
+              type: "info",
+              message: `Last ingest: ${latestIngest.toLocaleString()}`,
+            }
+          : {
+              type: "info",
+              message: "No ingest has been recorded yet.",
+            }
       );
-
-      setLastIngestStatus({
-        type: "info",
-        message: `Last ingest: ${latestIngest.toLocaleString()}`,
-      });
+      setLastRefreshStatus(
+        latestRefresh
+          ? {
+              type: "info",
+              message: `Last refresh: ${latestRefresh.toLocaleString()}`,
+            }
+          : {
+              type: "info",
+              message: "No refresh has been recorded yet.",
+            }
+      );
     } catch (error) {
+      const message = error?.message ?? "Unable to load app data.";
       setLastIngestStatus({
         type: "error",
-        message: error?.message ?? "Unable to load last ingest date.",
+        message,
+      });
+      setLastRefreshStatus({
+        type: "error",
+        message,
       });
     }
   }, []);
@@ -50,6 +78,18 @@ export default function RefreshPS() {
   useEffect(() => {
     fetchLastIngest();
   }, [fetchLastIngest]);
+
+  /**************************
+   * Handle the refresh and analysis of PS data
+   **************************/
+  const updateLastRefreshTimestamp = async () => {
+    const { modifiedCount = 0, upsertedCount = 0 } =
+      (await Rest.fetchJson("/api/appdata/last-refresh", {
+        method: "POST",
+      })) ?? {};
+
+    return modifiedCount + upsertedCount > 0;
+  };
 
   const handleRefreshClick = async () => {
     if (isRefreshing) {
@@ -65,22 +105,36 @@ export default function RefreshPS() {
 
     try {
       const {
-        insertedCount = 0,
-        skippedCount = 0,
-        updatedCount = 0,
+        mongoImportReport = 0,
+        all = 0,
+        mongoUpdateReport = 0,
       } = await Rest.fetchJson("/api/refresh-ps", {
         method: "POST",
       });
 
-      const inserted = Number(insertedCount) || 0;
-      const skipped = Number(skippedCount) || 0;
-      const updated = Number(updatedCount) || 0;
+      const inserted = Number(mongoImportReport) || 0;
+      const totalReceived = Number(all) || 0;
+      const updated = Number(mongoUpdateReport) || 0;
+
+      let lastRefreshUpdated = false;
+      try {
+        lastRefreshUpdated = await updateLastRefreshTimestamp();
+      } catch (error) {
+        console.error(
+          "Failed to update lastRefresh timestamp in appdata",
+          error
+        );
+      }
 
       setRefreshStatus({
-        type: "success",
-        message: `PS refresh complete: ${inserted} inserted, ${updated} updated, ${skipped} skipped.`,
+        type: lastRefreshUpdated ? "success" : "warning",
+        message: `PS refresh complete: ${totalReceived} received, ${inserted} inserted, ${updated} updated, ${
+          totalReceived - inserted - updated
+        } skipped.${
+          lastRefreshUpdated ? "" : " Last refresh timestamp not saved."
+        }`,
       });
-      fetchLastIngest();
+      await fetchLastIngest();
     } catch (error) {
       setRefreshStatus({
         type: "error",
@@ -213,6 +267,7 @@ export default function RefreshPS() {
           <ul className="upload-guidance">
             <UploadFeedback
               lastIngestStatus={lastIngestStatus}
+              lastRefreshStatus={lastRefreshStatus}
               uploadStatus={refreshStatus}
               clearStatus={null}
               ingestStatus={null}

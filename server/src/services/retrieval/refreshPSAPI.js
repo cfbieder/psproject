@@ -45,6 +45,10 @@ if (!PS_API_KEY) {
 
 pocketsmith.auth(PS_API_KEY);
 
+/*********************************************
+ * Temporary File Paths
+ **********************************************/
+
 const TEMP_DIR = ensureTempDir();
 const OUTPUT_FILES = {
   all: tempFiles.allTransactions,
@@ -55,6 +59,9 @@ const OUTPUT_FILES = {
   mongoUpdateReport: tempFiles.mongoUpdateReport,
 };
 
+/*********************************************
+ * Pagination Helpers
+ **********************************************/
 const parseLinkHeader = (linkHeader = "") => {
   const links = {};
   linkHeader
@@ -76,6 +83,10 @@ const parseLinkHeader = (linkHeader = "") => {
     });
   return links;
 };
+
+/*********************************************
+ * Get Total Pages from Response Headers
+ **********************************************/
 
 const getTotalPagesFromHeaders = (headers = {}) => {
   const totalPagesHeader =
@@ -245,7 +256,9 @@ async function saveUserTransactions(date, outputFile, userId) {
   */
   fs.mkdirSync(path.dirname(outputFile), { recursive: true });
   fs.writeFileSync(outputFile, JSON.stringify(transactions, null, 2));
-  console.log(`Saved ${transactions.length || 0} transactions to ${outputFile}`);
+  console.log(
+    `Saved ${transactions.length || 0} transactions to ${outputFile}`
+  );
   return transactions;
 }
 

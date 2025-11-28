@@ -55,6 +55,43 @@ const OUTPUT_FILES = {
   mongoUpdateReport: tempFiles.mongoUpdateReport,
 };
 
+const parseLinkHeader = (linkHeader = "") => {
+  const links = {};
+  linkHeader
+    .split(",")
+    .map((part) => part.trim())
+    .forEach((part) => {
+      const match = part.match(/<([^>]+)>;\s*rel="([^"]+)"/);
+      if (!match) return;
+      const [, url, rel] = match;
+      try {
+        const parsed = new URL(url);
+        const page = Number(parsed.searchParams.get("page"));
+        if (Number.isFinite(page)) {
+          links[rel] = page;
+        }
+      } catch (err) {
+        /* ignore malformed link */
+      }
+    });
+  return links;
+};
+
+const getTotalPagesFromHeaders = (headers = {}) => {
+  const totalPagesHeader =
+    headers["x-total-pages"] ||
+    headers["x-pages"] ||
+    headers["x-total-page"] ||
+    headers["x-page-count"];
+  const totalPages = Number(totalPagesHeader);
+  if (Number.isFinite(totalPages) && totalPages > 1) {
+    return totalPages;
+  }
+
+  const { last } = parseLinkHeader(headers.link);
+  return last && Number.isFinite(last) && last > 1 ? last : null;
+};
+
 /*********************************************
  * MongoDB Connection Helper
  **********************************************/
@@ -85,7 +122,7 @@ async function ensureMongoConnected() {
  * Main Processing Function
  **********************************************/
 async function processTransactions() {
-  const date = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const date = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
   const userId = PS_USER_ID || "330430";
 
   /*
@@ -155,11 +192,46 @@ async function processTransactions() {
 
 async function saveUserTransactions(date, outputFile, userId) {
   const updatedSince = date.toISOString();
-  const { data } = await pocketsmith.getUsersIdTransactions({
+  const { data, headers } = await pocketsmith.getUsersIdTransactions({
     updated_since: updatedSince,
     id: userId,
   });
-  await Promise.all(data.map(mapTransactionToPsData));
+  const transactions = [...data];
+  await Promise.all(transactions.map(mapTransactionToPsData));
+
+  const totalPages = getTotalPagesFromHeaders(headers) || 1;
+  const initialLinkInfo = parseLinkHeader(headers?.link);
+  if (totalPages > 1) {
+    const pagePromises = [];
+    for (let page = 2; page <= totalPages; page += 1) {
+      pagePromises.push(
+        pocketsmith.getUsersIdTransactions({
+          updated_since: updatedSince,
+          id: userId,
+          page,
+        })
+      );
+    }
+
+    const pagedResponses = await Promise.all(pagePromises);
+    for (const { data: pageData } of pagedResponses) {
+      await Promise.all(pageData.map(mapTransactionToPsData));
+      transactions.push(...pageData);
+    }
+  } else if (initialLinkInfo.next) {
+    let nextPage = initialLinkInfo.next;
+    while (nextPage) {
+      const { data: pageData, headers: pageHeaders } =
+        await pocketsmith.getUsersIdTransactions({
+          updated_since: updatedSince,
+          id: userId,
+          page: nextPage,
+        });
+      await Promise.all(pageData.map(mapTransactionToPsData));
+      transactions.push(...pageData);
+      nextPage = parseLinkHeader(pageHeaders?.link).next;
+    }
+  }
 
   /*
   for (let i = 0; i < data.length; i += 1) {
@@ -172,9 +244,9 @@ async function saveUserTransactions(date, outputFile, userId) {
   }
   */
   fs.mkdirSync(path.dirname(outputFile), { recursive: true });
-  fs.writeFileSync(outputFile, JSON.stringify(data, null, 2));
-  console.log(`Saved ${data.length || 0} transactions to ${outputFile}`);
-  return data;
+  fs.writeFileSync(outputFile, JSON.stringify(transactions, null, 2));
+  console.log(`Saved ${transactions.length || 0} transactions to ${outputFile}`);
+  return transactions;
 }
 
 /*******************************************************

@@ -6,7 +6,7 @@ const auth = (key) => {
   apiKey = key;
 };
 
-const request = async (path) => {
+const request = async (path, { includeHeaders = false } = {}) => {
   if (!apiKey) {
     throw new Error("Pocketsmith API key is not set. Call auth() first.");
   }
@@ -23,7 +23,18 @@ const request = async (path) => {
     throw new Error(`Pocketsmith request failed (${response.status}): ${text}`);
   }
 
-  return text ? JSON.parse(text) : null;
+  const data = text ? JSON.parse(text) : null;
+
+  if (!includeHeaders) {
+    return data;
+  }
+
+  const headers = {};
+  response.headers.forEach((value, key) => {
+    headers[key] = value;
+  });
+
+  return { data, headers };
 };
 
 const getUsersId = async ({ id }) => {
@@ -41,17 +52,21 @@ const getCategoriesId = async ({ id }) => {
   return { data };
 };
 
-const getUsersIdTransactions = async ({ id, updated_since }) => {
+const getUsersIdTransactions = async ({ id, updated_since, page }) => {
   const params = new URLSearchParams();
   if (updated_since) {
     params.set("updated_since", updated_since);
   }
+  if (page) {
+    params.set("page", page);
+  }
 
   const query = params.toString();
-  const data = await request(
-    `/users/${id}/transactions${query ? `?${query}` : ""}`
+  const { data, headers } = await request(
+    `/users/${id}/transactions${query ? `?${query}` : ""}`,
+    { includeHeaders: true }
   );
-  return { data };
+  return { data, headers };
 };
 
 module.exports = {

@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "Date": "2025-09-30T00:00:00.000Z",
+    "Description1": "Unrealized",
+    "Description2": "Unrealized",
+    "Amount": 18498,
+    "Currency": "EUR",
+    "BaseAmount": 21706.68,
+    "BaseCurrency": "USD",
+    "TransactionType": "credit",
+    "Account": "CVC Fund VIII",
+    "ClosingBalance": 555428.84,
+    "Category": "Unrealized G/L",
+    "ParentCategories": "Financial Income",
+    "Labels": "",
+    "ID": "1546344204",
+    "Bank": "Investments",
+    "_id": "6929e9e89f6ffd571b7f2bd4",
+    "__v": 0
+  }
+]

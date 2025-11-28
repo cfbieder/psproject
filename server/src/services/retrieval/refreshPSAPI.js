@@ -85,7 +85,7 @@ async function ensureMongoConnected() {
  * Main Processing Function
  **********************************************/
 async function processTransactions() {
-  const date = new Date("2025-11-26");
+  const date = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const userId = PS_USER_ID || "330430";
 
   /*
@@ -160,6 +160,17 @@ async function saveUserTransactions(date, outputFile, userId) {
     id: userId,
   });
   await Promise.all(data.map(mapTransactionToPsData));
+
+  /*
+  for (let i = 0; i < data.length; i += 1) {
+    const txn = data[i];
+    console.log(
+      `Merchant: ${txn?.payee || txn?.merchant || "Unknown"} | Amount: ${
+        txn?.amount
+      }`
+    );
+  }
+  */
   fs.mkdirSync(path.dirname(outputFile), { recursive: true });
   fs.writeFileSync(outputFile, JSON.stringify(data, null, 2));
   console.log(`Saved ${data.length || 0} transactions to ${outputFile}`);

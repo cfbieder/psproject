@@ -25,7 +25,7 @@
     "amount_in_base_currency": -10.46,
     "type": "debit",
     "is_transfer": null,
-    "needs_review": true,
+    "needs_review": false,
     "status": "posted",
     "note": null,
     "labels": [],
@@ -67,7 +67,7 @@
       "updated_at": "2025-11-27T22:13:28Z"
     },
     "created_at": "2025-11-27T22:13:24Z",
-    "updated_at": "2025-11-27T22:13:26Z"
+    "updated_at": "2025-11-28T13:00:10Z"
   },
   {
     "id": 1545460377,
@@ -95,7 +95,7 @@
     "amount_in_base_currency": -10.42,
     "type": "debit",
     "is_transfer": null,
-    "needs_review": true,
+    "needs_review": false,
     "status": "posted",
     "note": null,
     "labels": [],
@@ -137,7 +137,7 @@
       "updated_at": "2025-11-27T22:13:28Z"
     },
     "created_at": "2025-11-27T22:13:24Z",
-    "updated_at": "2025-11-27T22:13:26Z"
+    "updated_at": "2025-11-28T13:00:11Z"
   },
   {
     "id": 1545461838,
@@ -210,6 +210,64 @@
     "updated_at": "2025-11-28T07:30:58Z"
   },
   {
+    "id": 1546208853,
+    "payee": "AUTOPAY PAYMENT - THANK YOU",
+    "original_payee": "AUTOPAY PAYMENT - THANK YOU",
+    "date": "2025-11-27",
+    "upload_source": "data_feed",
+    "category": null,
+    "closing_balance": -453.92,
+    "cheque_number": null,
+    "memo": null,
+    "amount": 94.22,
+    "amount_in_base_currency": 94.22,
+    "type": "credit",
+    "is_transfer": null,
+    "needs_review": true,
+    "status": "posted",
+    "note": null,
+    "labels": [],
+    "transaction_account": {
+      "id": 3498079,
+      "account_id": 1805515,
+      "name": "Delta SkyMiles Reserve Card",
+      "latest_feed_name": "Delta SkyMiles® Reserve Card",
+      "number": "1002",
+      "type": "credits",
+      "offline": false,
+      "is_net_worth": false,
+      "include_in_net_worth": true,
+      "currency_code": "usd",
+      "current_balance": -453.92,
+      "current_balance_in_base_currency": -453.92,
+      "current_balance_exchange_rate": null,
+      "current_balance_date": "2025-11-28",
+      "current_balance_source": "data_feed",
+      "data_feeds_balance_type": "balance_reversed",
+      "safe_balance": null,
+      "safe_balance_in_base_currency": null,
+      "has_safe_balance_adjustment": false,
+      "starting_balance": -792.06,
+      "starting_balance_date": "2024-12-23",
+      "institution": {
+        "id": 857132,
+        "title": "American Express",
+        "currency_code": "usd",
+        "colour": "#80D1BF",
+        "logo_url": "https://data-feeds-assets-production.nyc3.digitaloceanspaces.com/su3a6odoc1osemqm3c6e0l7n8t15",
+        "favicon_data_uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAZlBMVEUAb8////8XfNQdgNXw9/1ysOXL4vbR5vfi7/qJvekEctCmze9uruTp8/uSwutBlNxPnN73+/43j9pKmd0ph9dhpuK+2/N7tecNd9Kz1fHb6/kwi9mCueiOwOrO5PZZouBlqeOaxuzl4MTmAAABPElEQVQ4jc2S63KDIBCFd4UAQVEx1hBNYvP+L9mzppkibf/nzMhy+VjOIkRvJl+Jnm3lKUnYAQ2L+q3lmw8SdgkcWzuzYW2t5dBzQMyBlQ1Rwr4agws7XgsLlnta6CzAQjhIJ5Xy9RPPXjmfNIBmhIOWrjuPE39Qi+8owA1h8S4HBsZuFyaqIoDgxzty5sCFm+9eCwAGB0xlwMgh+QP0SUqAiUhxDjz4jDpFC53kykap5wdQkYOLG6Cdc1oChs69gKvWOnLUL21oxFRe54GPz04/0AnbTfL1L2BooFqP8GMrGNMlcHz+SqdoVRjopQRUBz2YZ/g/F+sbkBR0RQ0jLkwS/XNEhE1PdUEI0LfQFDvq48V7PIo/y1x76qI8izQVZQaz6W5M5FqzNXMBZKq3JPtHu1XwkieqJNIb6AvEpw7IHxinGgAAAABJRU5ErkJggg==",
+        "created_at": "2023-07-11T20:58:03Z",
+        "updated_at": "2024-12-21T02:20:51Z"
+      },
+      "data_feeds_account_id": "851619",
+      "data_feeds_connection_id": "241047",
+      "created_at": "2024-12-21T02:20:49Z",
+      "updated_at": "2025-11-28T13:50:56Z"
+    },
+    "created_at": "2025-11-28T13:50:54Z",
+    "updated_at": "2025-11-28T13:50:54Z"
+  },
+  {
     "id": 1545460374,
     "payee": "ASW SOLIVODA KONSTANCIN JEPOL",
     "original_payee": "ASW SOLIVODA KONSTANCIN JEPOL",
@@ -235,7 +293,7 @@
     "amount_in_base_currency": -1.92,
     "type": "debit",
     "is_transfer": null,
-    "needs_review": true,
+    "needs_review": false,
     "status": "posted",
     "note": null,
     "labels": [],
@@ -277,7 +335,7 @@
       "updated_at": "2025-11-27T22:13:28Z"
     },
     "created_at": "2025-11-27T22:13:24Z",
-    "updated_at": "2025-11-27T22:13:26Z"
+    "updated_at": "2025-11-28T13:00:52Z"
   },
   {
     "id": 1545460911,
@@ -379,8 +437,8 @@
       "include_in_net_worth": true,
       "currency_code": "pln",
       "current_balance": -100000,
-      "current_balance_in_base_currency": -27270.89,
-      "current_balance_exchange_rate": 0.2727088772739148,
+      "current_balance_in_base_currency": -27361.47,
+      "current_balance_exchange_rate": 0.2736147296659109,
       "current_balance_date": "2025-11-28",
       "current_balance_source": "closing_balance_as_today",
       "data_feeds_balance_type": "balance",
@@ -483,15 +541,27 @@
     "original_payee": "WARSZAWA WAWOZOWA WARSZAWA POL",
     "date": "2025-11-26",
     "upload_source": "data_feed",
-    "category": null,
+    "category": {
+      "id": 11111881,
+      "title": "Chris Spending",
+      "colour": "#9c27b0",
+      "is_transfer": false,
+      "is_bill": true,
+      "refund_behaviour": "credits_are_refunds",
+      "children": [],
+      "parent_id": 16619114,
+      "roll_up": false,
+      "created_at": "2022-11-26T11:19:24Z",
+      "updated_at": "2025-06-17T05:34:49Z"
+    },
     "closing_balance": -19236.96,
     "cheque_number": null,
     "memo": null,
     "amount": -15,
     "amount_in_base_currency": -4.11,
     "type": "debit",
-    "is_transfer": null,
-    "needs_review": true,
+    "is_transfer": false,
+    "needs_review": false,
     "status": "posted",
     "note": null,
     "labels": [],
@@ -533,7 +603,7 @@
       "updated_at": "2025-11-27T22:13:28Z"
     },
     "created_at": "2025-11-26T22:13:31Z",
-    "updated_at": "2025-11-26T22:13:31Z"
+    "updated_at": "2025-11-28T13:50:44Z"
   },
   {
     "id": 1544210136,
@@ -541,15 +611,27 @@
     "original_payee": "PIZZAIOLO Warszawa POL",
     "date": "2025-11-26",
     "upload_source": "data_feed",
-    "category": null,
+    "category": {
+      "id": 11112325,
+      "title": "Food and Drink",
+      "colour": null,
+      "is_transfer": false,
+      "is_bill": false,
+      "refund_behaviour": "credits_are_refunds",
+      "children": [],
+      "parent_id": 16619114,
+      "roll_up": false,
+      "created_at": "2022-11-26T12:49:57Z",
+      "updated_at": "2025-06-17T05:34:50Z"
+    },
     "closing_balance": -19221.96,
     "cheque_number": null,
     "memo": null,
     "amount": -70,
     "amount_in_base_currency": -19.18,
     "type": "debit",
-    "is_transfer": null,
-    "needs_review": true,
+    "is_transfer": false,
+    "needs_review": false,
     "status": "posted",
     "note": null,
     "labels": [],
@@ -591,7 +673,7 @@
       "updated_at": "2025-11-27T22:13:28Z"
     },
     "created_at": "2025-11-26T22:13:31Z",
-    "updated_at": "2025-11-26T22:13:31Z"
+    "updated_at": "2025-11-28T13:50:34Z"
   },
   {
     "id": 1544210490,
@@ -619,7 +701,7 @@
     "amount_in_base_currency": -14.93,
     "type": "debit",
     "is_transfer": null,
-    "needs_review": true,
+    "needs_review": false,
     "status": "posted",
     "note": null,
     "labels": [],
@@ -661,7 +743,7 @@
       "updated_at": "2025-11-27T22:13:47Z"
     },
     "created_at": "2025-11-26T22:13:50Z",
-    "updated_at": "2025-11-26T22:13:50Z"
+    "updated_at": "2025-11-28T13:50:03Z"
   },
   {
     "id": 1544210526,
@@ -817,7 +899,7 @@
     "amount_in_base_currency": -387.88,
     "type": "debit",
     "is_transfer": true,
-    "needs_review": true,
+    "needs_review": false,
     "status": "posted",
     "note": null,
     "labels": [],
@@ -856,10 +938,10 @@
       "data_feeds_account_id": "641653",
       "data_feeds_connection_id": "289692",
       "created_at": "2022-11-26T12:49:48Z",
-      "updated_at": "2025-11-28T07:28:12Z"
+      "updated_at": "2025-11-28T13:50:24Z"
     },
     "created_at": "2025-11-27T21:36:42Z",
-    "updated_at": "2025-11-27T21:36:44Z"
+    "updated_at": "2025-11-28T13:50:17Z"
   },
   {
     "id": 1544210487,
@@ -937,15 +1019,27 @@
     "original_payee": "WYPŁATA",
     "date": "2025-11-26",
     "upload_source": "data_feed",
-    "category": null,
+    "category": {
+      "id": 11111890,
+      "title": "Kasia Spending",
+      "colour": "#9c27b0",
+      "is_transfer": false,
+      "is_bill": true,
+      "refund_behaviour": "credits_are_refunds",
+      "children": [],
+      "parent_id": 16619114,
+      "roll_up": false,
+      "created_at": "2022-11-26T11:19:24Z",
+      "updated_at": "2025-06-17T05:34:49Z"
+    },
     "closing_balance": 43983.84,
     "cheque_number": null,
     "memo": null,
     "amount": -3300,
     "amount_in_base_currency": -904.33,
     "type": "debit",
-    "is_transfer": null,
-    "needs_review": true,
+    "is_transfer": false,
+    "needs_review": false,
     "status": "posted",
     "note": null,
     "labels": [],
@@ -987,7 +1081,7 @@
       "updated_at": "2025-11-27T22:13:34Z"
     },
     "created_at": "2025-11-26T22:13:56Z",
-    "updated_at": "2025-11-26T22:13:56Z"
+    "updated_at": "2025-11-28T13:50:53Z"
   },
   {
     "id": 1544754582,
@@ -1054,7 +1148,7 @@
       "data_feeds_account_id": "564486",
       "data_feeds_connection_id": "254069",
       "created_at": "2022-11-30T20:33:45Z",
-      "updated_at": "2025-11-28T08:22:11Z"
+      "updated_at": "2025-11-28T13:50:08Z"
     },
     "created_at": "2025-11-27T06:20:39Z",
     "updated_at": "2025-11-27T06:29:30Z"
@@ -1684,7 +1778,7 @@
       "data_feeds_account_id": "564486",
       "data_feeds_connection_id": "254069",
       "created_at": "2022-11-30T20:33:45Z",
-      "updated_at": "2025-11-28T08:22:11Z"
+      "updated_at": "2025-11-28T13:50:08Z"
     },
     "created_at": "2025-11-26T06:14:13Z",
     "updated_at": "2025-11-26T06:53:19Z"
@@ -1835,15 +1929,27 @@
     "original_payee": "AUTOMATIC PAYMENT - THANK",
     "date": "2025-11-25",
     "upload_source": "data_feed",
-    "category": null,
+    "category": {
+      "id": 11112442,
+      "title": "Transfer - Credit Card Payments",
+      "colour": "#FFEB3B",
+      "is_transfer": true,
+      "is_bill": false,
+      "refund_behaviour": "credits_are_refunds",
+      "children": [],
+      "parent_id": 11112439,
+      "roll_up": false,
+      "created_at": "2022-11-26T13:11:00Z",
+      "updated_at": "2025-06-17T05:34:49Z"
+    },
     "closing_balance": -95.37,
     "cheque_number": null,
     "memo": null,
     "amount": 387.88,
     "amount_in_base_currency": 387.88,
     "type": "credit",
-    "is_transfer": null,
-    "needs_review": true,
+    "is_transfer": true,
+    "needs_review": false,
     "status": "posted",
     "note": null,
     "labels": [],
@@ -1882,10 +1988,10 @@
       "data_feeds_account_id": "641650",
       "data_feeds_connection_id": "289692",
       "created_at": "2022-11-26T12:49:48Z",
-      "updated_at": "2025-11-28T07:28:40Z"
+      "updated_at": "2025-11-28T13:50:29Z"
     },
     "created_at": "2025-11-26T21:36:12Z",
-    "updated_at": "2025-11-26T21:36:12Z"
+    "updated_at": "2025-11-28T13:50:20Z"
   },
   {
     "id": 1543042377,
@@ -1956,75 +2062,5 @@
     },
     "created_at": "2025-11-25T22:13:31Z",
     "updated_at": "2025-11-26T06:53:26Z"
-  },
-  {
-    "id": 1543422828,
-    "payee": "MAGOOSH, INC.",
-    "original_payee": "MAGOOSH, INC.",
-    "date": "2025-11-25",
-    "upload_source": "data_feed",
-    "category": {
-      "id": 11111944,
-      "title": "Anna - Exp",
-      "colour": "#00BCD4",
-      "is_transfer": false,
-      "is_bill": false,
-      "refund_behaviour": "credits_are_refunds",
-      "children": [],
-      "parent_id": 21421684,
-      "roll_up": false,
-      "created_at": "2022-11-26T11:19:49Z",
-      "updated_at": "2025-06-17T05:34:50Z"
-    },
-    "closing_balance": -2461.84,
-    "cheque_number": null,
-    "memo": null,
-    "amount": -69.82,
-    "amount_in_base_currency": -69.82,
-    "type": "debit",
-    "is_transfer": null,
-    "needs_review": false,
-    "status": "posted",
-    "note": null,
-    "labels": [],
-    "transaction_account": {
-      "id": 1876744,
-      "account_id": 1805515,
-      "name": "LUXURY CARD",
-      "latest_feed_name": "Black Card",
-      "number": "1822",
-      "type": "credits",
-      "offline": false,
-      "is_net_worth": false,
-      "include_in_net_worth": true,
-      "currency_code": "usd",
-      "current_balance": -2733.22,
-      "current_balance_in_base_currency": -2733.22,
-      "current_balance_exchange_rate": null,
-      "current_balance_date": "2025-11-28",
-      "current_balance_source": "data_feed",
-      "data_feeds_balance_type": "balance",
-      "safe_balance": null,
-      "safe_balance_in_base_currency": null,
-      "has_safe_balance_adjustment": false,
-      "starting_balance": -9651.02,
-      "starting_balance_date": "2022-11-30",
-      "institution": {
-        "id": 682663,
-        "title": "Barclaycard",
-        "currency_code": "usd",
-        "colour": "#E26560",
-        "logo_url": "https://data-feeds-assets-production.nyc3.digitaloceanspaces.com/pr883adszqwnegvx9oj7pa8dwutd",
-        "favicon_data_uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAC00lEQVQ4jXWTS2xUVRjHf/fBdOi0M1MKpS1VsNBWCK0GopEEJIo2mBDQsICVEhISAoksMHFDXNCNCxM3LnTDI6xYaDANhEcxxoirKkkVEAjQaqfTWno798Lcuffc82AxHcBJ+HL+OV++x/+cnPP/LOps8JdS/3jCF1Lq7VnHUjuX27uP9+eu1tfVzK4PdKXi5r6MUTPalmOhnfMSjtVyB/7wBgevTgz8j2Do96n1b4xMXW8eKd3u++nh7WIoxoffatm7ttH+W2vDTEIW4O2L99+7MF66NDrpX2s7c/3LpwRni+LDcZN+3XXd3nDe650M4vDQX5U90lgDGLgyp5v2jpa2rclnthYKs3izQZM/V/p88NzYJwCun2rc47spjNboJR04mOEfZ8SmQoiDDX5ken+dTkYaUdjpDDopET8KeRhmNgGn3Yq1qEcoDYCvDb4ym1EAprq0ZnI+gqgMIgajQSnaHOtj4KDbYDuCxDQAoKt9GPPM1wqMqiaNBi1BK+bKkQawU8ZYSEA9R1DblQSZgEqqvpIgJShFVzZdAbCXOUpWT7WqjTVICUlchUwgEQuIQUtuzYffAth5h5MOFm5YZpFMcP/7l8U6ftacCOyyh+MAUoBW2JahIb1wg1ea3Gsr7ITsxNiDl8Lp4E1rjvY0EFUgjkDELBEBqzvy5B3B8pc7aW1MiXc7s6cA7O82ZL/viwrnllriU6dw987GrmVDXhCCqEASQRLz6HHEO82KNStX8H5P+72VnW1Hv962duqplK/sHvhouljMtGYWH75HrjvwSiAiiCsQPyY2Dndv3OKD9aseDE8ER0b3b/mmpkTreV3v+rkwdP5m8ZgMK9WvkwuPFocQhQy82r1v7MDW0y8cpthxfmhty91wXSD0IQygHOBqxeb+nj+7W3K/1Q+fVR9Yd3nS8cpin+V7n81O/NORt02xJdv01ZbV7adO7HhN1dc/AQ11bip5Bh7YAAAAAElFTkSuQmCC",
-        "created_at": "2022-11-30T20:33:45Z",
-        "updated_at": "2024-03-26T07:46:00Z"
-      },
-      "data_feeds_account_id": "564486",
-      "data_feeds_connection_id": "254069",
-      "created_at": "2022-11-30T20:33:45Z",
-      "updated_at": "2025-11-28T08:22:11Z"
-    },
-    "created_at": "2025-11-26T06:14:13Z",
-    "updated_at": "2025-11-26T06:53:20Z"
   }
 ]

@@ -14,9 +14,23 @@ export default function RefreshPS() {
   const [lastIngestStatus, setLastIngestStatus] = useState(null);
   const [lastRefreshStatus, setLastRefreshStatus] = useState(null);
   const [refreshStatus, setRefreshStatus] = useState(null);
-  const [analyzeStatus, setAnalyzeStatus] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [newTransactions, setNewTransactions] = useState([]);
+  const [showNewTransactions, setShowNewTransactions] = useState(false);
+  const [isLoadingNewTransactions, setIsLoadingNewTransactions] =
+    useState(false);
+  const [newTransactionsError, setNewTransactionsError] = useState(null);
+  const [modifiedTransactions, setModifiedTransactions] = useState([]);
+  const [showModifiedTransactions, setShowModifiedTransactions] =
+    useState(false);
+  const [isLoadingModifiedTransactions, setIsLoadingModifiedTransactions] =
+    useState(false);
+  const [modifiedTransactionsError, setModifiedTransactionsError] =
+    useState(null);
+
+  /***************************
+   * Fetch last ingest and refresh timestamps
+   **************************/
 
   const fetchLastIngest = useCallback(async () => {
     try {
@@ -75,12 +89,16 @@ export default function RefreshPS() {
     }
   }, []);
 
+  /***************************
+   * Initial data fetch
+   **************************/
+
   useEffect(() => {
     fetchLastIngest();
   }, [fetchLastIngest]);
 
   /**************************
-   * Handle the refresh and analysis of PS data
+   * Handle the change of refresh date
    **************************/
   const updateLastRefreshTimestamp = async () => {
     const { modifiedCount = 0, upsertedCount = 0 } =
@@ -91,6 +109,10 @@ export default function RefreshPS() {
     return modifiedCount + upsertedCount > 0;
   };
 
+  /**************************
+   * Handle button clicks
+   **************************/
+
   const handleRefreshClick = async () => {
     if (isRefreshing) {
       return;
@@ -100,7 +122,6 @@ export default function RefreshPS() {
       type: "info",
       message: "Refreshing PS data from PocketSmith...",
     });
-    setAnalyzeStatus(null);
     setIsRefreshing(true);
 
     try {
@@ -145,113 +166,83 @@ export default function RefreshPS() {
     }
   };
 
-  const handleAnalyzeClick = async () => {
-    if (isAnalyzing) {
-      return;
-    }
-
-    setAnalyzeStatus({
-      type: "info",
-      message: "Running PS analysis...",
-    });
-    setIsAnalyzing(true);
-
+  const loadNewTransactions = useCallback(async () => {
+    setNewTransactionsError(null);
+    setIsLoadingNewTransactions(true);
     try {
-      const result = await Rest.fetchJson("/api/analyze-ps");
-      const {
-        misAcct = {},
-        missCOAact = {},
-        misCat = {},
-        missCOACat = {},
-      } = result ?? {};
-
-      const missingAccounts = Array.isArray(misAcct.missingAccounts)
-        ? misAcct.missingAccounts.filter(
-            (item) => typeof item === "string" && item
-          )
+      const data = await Rest.fetchJson("/api/new-transactions");
+      const parsed = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.transactions)
+        ? data.transactions
+        : data
+        ? [data]
         : [];
-      const unknownAccounts = Array.isArray(missCOAact.unknownAccounts)
-        ? missCOAact.unknownAccounts.filter(
-            (item) => typeof item === "string" && item
-          )
-        : [];
-      const missingCategories = Array.isArray(misCat.missingCategories)
-        ? misCat.missingCategories.filter(
-            (item) => typeof item === "string" && item
-          )
-        : [];
-      const unknownCategories = Array.isArray(missCOACat.unknownCategories)
-        ? missCOACat.unknownCategories.filter(
-            (item) => typeof item === "string" && item
-          )
-        : [];
-
-      const missingAccountCount =
-        Number.isFinite(misAcct.missingCount) && misAcct.missingCount >= 0
-          ? misAcct.missingCount
-          : missingAccounts.length;
-      const unknownAccountCount =
-        Number.isFinite(missCOAact.unknownCount) && missCOAact.unknownCount >= 0
-          ? missCOAact.unknownCount
-          : unknownAccounts.length;
-      const missingCategoryCount =
-        Number.isFinite(misCat.missingCount) && misCat.missingCount >= 0
-          ? misCat.missingCount
-          : missingCategories.length;
-      const unknownCategoryCount =
-        Number.isFinite(missCOACat.unknownCount) && missCOACat.unknownCount >= 0
-          ? missCOACat.unknownCount
-          : unknownCategories.length;
-
-      const details = [];
-      if (missingAccounts.length) {
-        details.push(
-          `Missing from COA (accounts): ${missingAccounts.join(", ")}`
-        );
-      }
-      if (unknownAccounts.length) {
-        details.push(
-          `Unrecognized COA accounts: ${unknownAccounts.join(", ")}`
-        );
-      }
-      if (missingCategories.length) {
-        details.push(
-          `Missing from COA (categories): ${missingCategories.join(", ")}`
-        );
-      }
-      if (unknownCategories.length) {
-        details.push(
-          `Unrecognized COA categories: ${unknownCategories.join(", ")}`
-        );
-      }
-      if (
-        unknownAccounts.length === 0 &&
-        missCOAact.status &&
-        missCOAact.status !== "ok"
-      ) {
-        details.push(`COA account status: ${missCOAact.status}`);
-      }
-      if (
-        unknownCategories.length === 0 &&
-        missCOACat.status &&
-        missCOACat.status !== "ok"
-      ) {
-        details.push(`COA category status: ${missCOACat.status}`);
-      }
-
-      setAnalyzeStatus({
-        type: "success",
-        message: `Analysis complete: ${missingAccountCount} missing accounts, ${unknownAccountCount} unknown accounts; ${missingCategoryCount} missing categories, ${unknownCategoryCount} unknown categories.`,
-        details,
-      });
+      setNewTransactions(parsed);
     } catch (error) {
-      setAnalyzeStatus({
-        type: "error",
-        message: error?.message ?? "Failed to analyze PS data.",
-      });
+      setNewTransactions([]);
+      setNewTransactionsError(
+        error?.message ?? "Unable to load new transactions."
+      );
     } finally {
-      setIsAnalyzing(false);
+      setIsLoadingNewTransactions(false);
     }
+  }, []);
+
+  const loadModifiedTransactions = useCallback(async () => {
+    setModifiedTransactionsError(null);
+    setIsLoadingModifiedTransactions(true);
+    try {
+      const data = await Rest.fetchJson("/api/modified-transactions");
+      const parsed = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.transactions)
+        ? data.transactions
+        : data
+        ? [data]
+        : [];
+      setModifiedTransactions(parsed);
+    } catch (error) {
+      setModifiedTransactions([]);
+      setModifiedTransactionsError(
+        error?.message ?? "Unable to load modified transactions."
+      );
+    } finally {
+      setIsLoadingModifiedTransactions(false);
+    }
+  }, []);
+
+  const handleToggleNewTransactions = async () => {
+    const nextShow = !showNewTransactions;
+    setShowNewTransactions(nextShow);
+    if (nextShow) {
+      await loadNewTransactions();
+    }
+  };
+
+  const handleToggleModifiedTransactions = async () => {
+    const nextShow = !showModifiedTransactions;
+    setShowModifiedTransactions(nextShow);
+    if (nextShow) {
+      await loadModifiedTransactions();
+    }
+  };
+
+  const formatDate = (value) => {
+    const date = value ? new Date(value) : null;
+    return date && !Number.isNaN(date.getTime())
+      ? date.toLocaleDateString()
+      : "";
+  };
+
+  const formatAmount = (value) => {
+    const amount = Number(value);
+    return Number.isFinite(amount)
+      ? amount.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+      : "";
   };
 
   return (
@@ -271,16 +262,138 @@ export default function RefreshPS() {
               uploadStatus={refreshStatus}
               clearStatus={null}
               ingestStatus={null}
-              analyzeStatus={analyzeStatus}
             />
           </ul>
+          {showNewTransactions && (
+            <div style={{ marginTop: "1.25rem" }}>
+              <p style={{ fontWeight: 600, margin: "0 0 0.5rem" }}>
+                New Transactions
+              </p>
+              {isLoadingNewTransactions ? (
+                <p className="upload-feedback">Loading new transactions...</p>
+              ) : newTransactionsError ? (
+                <p className="upload-feedback upload-feedback_error">
+                  {newTransactionsError}
+                </p>
+              ) : newTransactions.length === 0 ? (
+                <p className="upload-feedback">
+                  No new transactions were found in the latest import.
+                </p>
+              ) : (
+                <div
+                  style={{
+                    maxHeight: "320px",
+                    overflowY: "auto",
+                    borderRadius: "0.75rem",
+                    border: "1px solid var(--border)",
+                    boxShadow: "var(--shadow-soft)",
+                  }}
+                >
+                  <table
+                    className="balance-report-table"
+                    style={{ margin: 0, border: "0" }}
+                  >
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Description1</th>
+                        <th>Amount</th>
+                        <th>Currency</th>
+                        <th>Account</th>
+                        <th>Category</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {newTransactions.map((txn, index) => (
+                        <tr key={txn.ID ?? txn._id ?? index}>
+                          <td>{formatDate(txn.Date ?? txn.date)}</td>
+                          <td>
+                            {txn.Description1 ??
+                              txn.description1 ??
+                              txn.description ??
+                              ""}
+                          </td>
+                          <td>{formatAmount(txn.Amount ?? txn.amount)}</td>
+                          <td>{txn.Currency ?? txn.currency ?? ""}</td>
+                          <td>{txn.Account ?? txn.account ?? ""}</td>
+                          <td>{txn.Category ?? txn.category ?? ""}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+          {showModifiedTransactions && (
+            <div style={{ marginTop: "1.25rem" }}>
+              <p style={{ fontWeight: 600, margin: "0 0 0.5rem" }}>
+                Modified Transactions
+              </p>
+              {isLoadingModifiedTransactions ? (
+                <p className="upload-feedback">
+                  Loading modified transactions...
+                </p>
+              ) : modifiedTransactionsError ? (
+                <p className="upload-feedback upload-feedback_error">
+                  {modifiedTransactionsError}
+                </p>
+              ) : modifiedTransactions.length === 0 ? (
+                <p className="upload-feedback">
+                  No modified transactions were found in the latest update.
+                </p>
+              ) : (
+                <div
+                  style={{
+                    maxHeight: "320px",
+                    overflowY: "auto",
+                    borderRadius: "0.75rem",
+                    border: "1px solid var(--border)",
+                    boxShadow: "var(--shadow-soft)",
+                  }}
+                >
+                  <table
+                    className="balance-report-table"
+                    style={{ margin: 0, border: "0" }}
+                  >
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Description1</th>
+                        <th>Amount</th>
+                        <th>Currency</th>
+                        <th>Account</th>
+                        <th>Category</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {modifiedTransactions.map((txn, index) => (
+                        <tr key={txn.ID ?? txn._id ?? index}>
+                          <td>{formatDate(txn.Date ?? txn.date)}</td>
+                          <td>
+                            {txn.Description1 ??
+                              txn.description1 ??
+                              txn.description ??
+                              ""}
+                          </td>
+                          <td>{formatAmount(txn.Amount ?? txn.amount)}</td>
+                          <td>{txn.Currency ?? txn.currency ?? ""}</td>
+                          <td>{txn.Account ?? txn.account ?? ""}</td>
+                          <td>{txn.Category ?? txn.category ?? ""}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </section>
         <section className="upload-panel upload-form">
           <div className="upload-form-field">
             <p>
               Kick off a refresh to download new or updated transactions and
-              import them into the database. Run analysis afterward to verify
-              chart mappings.
+              import them into the database.
             </p>
           </div>
           <div className="upload-actions">
@@ -288,17 +401,37 @@ export default function RefreshPS() {
               type="button"
               className="upload-submit"
               onClick={handleRefreshClick}
-              disabled={isRefreshing || isAnalyzing}
+              disabled={isRefreshing}
             >
               {isRefreshing ? "Refreshing..." : "Refresh PS data"}
             </button>
+          </div>
+          <div className="upload-actions">
             <button
               type="button"
               className="upload-submit"
-              onClick={handleAnalyzeClick}
-              disabled={isRefreshing || isAnalyzing}
+              onClick={handleToggleNewTransactions}
+              disabled={isLoadingNewTransactions}
             >
-              {isAnalyzing ? "Analyzing..." : "Analyze PS data"}
+              {isLoadingNewTransactions
+                ? "Loading transactions..."
+                : showNewTransactions
+                ? "Hide New Transactions"
+                : "Show New Transactions"}
+            </button>
+          </div>
+          <div className="upload-actions">
+            <button
+              type="button"
+              className="upload-submit"
+              onClick={handleToggleModifiedTransactions}
+              disabled={isLoadingModifiedTransactions}
+            >
+              {isLoadingModifiedTransactions
+                ? "Loading transactions..."
+                : showModifiedTransactions
+                ? "Hide Modified Transactions"
+                : "Show Modified Transactions"}
             </button>
           </div>
         </section>

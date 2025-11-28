@@ -4,7 +4,11 @@ const DataGateway = require("../../../components/helpers/DataGateway");
 const PsCsvIngestor = require("../services/retrieval/psCsvIngestor");
 const DataAnalyzerUtils = require("../services/retrieval/dataAnalyzerUtils");
 const PSdata = require("../../../components/models/PSdata");
-const { dataPaths, ensureComponentsDataDir } = require("../utils/dataPaths");
+const {
+  dataPaths,
+  ensureComponentsDataDir,
+  tempFiles,
+} = require("../utils/dataPaths");
 const {
   processTransactions,
   logTransactionFileCounts,
@@ -197,6 +201,59 @@ router.post("/appdata/last-refresh", async (req, res) => {
     return res.status(500).json({
       error: "Failed to update appdata refresh timestamp",
     });
+  }
+});
+
+router.get("/new-transactions", async (req, res) => {
+  try {
+    const raw = await fs.readFile(tempFiles.mongoImportReport, "utf8");
+    const parsed = raw.trim() ? JSON.parse(raw) : [];
+    const transactions = Array.isArray(parsed)
+      ? parsed
+      : Array.isArray(parsed?.transactions)
+      ? parsed.transactions
+      : parsed
+      ? [parsed]
+      : [];
+
+    return res.json(transactions);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return res.json([]);
+    }
+
+    console.error("[NEW-TRANSACTIONS] Failed to read import report:", error);
+    return res
+      .status(500)
+      .json({ error: "Unable to load new transactions report" });
+  }
+});
+
+router.get("/modified-transactions", async (req, res) => {
+  try {
+    const raw = await fs.readFile(tempFiles.mongoUpdateReport, "utf8");
+    const parsed = raw.trim() ? JSON.parse(raw) : [];
+    const transactions = Array.isArray(parsed)
+      ? parsed
+      : Array.isArray(parsed?.transactions)
+      ? parsed.transactions
+      : parsed
+      ? [parsed]
+      : [];
+
+    return res.json(transactions);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return res.json([]);
+    }
+
+    console.error(
+      "[MODIFIED-TRANSACTIONS] Failed to read update report:",
+      error
+    );
+    return res
+      .status(500)
+      .json({ error: "Unable to load modified transactions report" });
   }
 });
 

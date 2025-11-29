@@ -189,54 +189,62 @@ export default function BalanceReport({
     <section className="balance-content">
       {hasReport ? (
         <div className="balance-report">
-          <table className="balance-report-table" ref={tableRef}>
-            <caption className="balance-report-table__caption">
-              <div className="balance-report-table__caption-row">
-                <div>
-                  <h2 className="balance-report__title">Balance Sheet</h2>
-                  <span className="balance-report__date">
-                    As of {periodLabels[0]}
-                    {periodLabels.length > 1
-                      ? ` vs ${periodLabels.slice(1).join(" vs ")}`
-                      : ""}
-                  </span>
-                </div>
-              </div>
-            </caption>
-            <colgroup>
-              <col style={{ width: `${categoryColumnWidth}px` }} />
-              <col />
-              {periodLabels.slice(1).map((_, index) => (
-                <col key={`period-col-${index + 2}`} />
-              ))}
-            </colgroup>
-            <thead>
-              <tr>
-                <th className="balance-report-table__category">
-                  <span>Account</span>
-                  <span
-                    className="balance-report-table__column-resizer"
-                    role="presentation"
-                    onMouseDown={startResizingCategory}
-                  />
-                </th>
-                <th>{periodLabels[0] ?? "Period 1"}</th>
-                {periodLabels.slice(1).map((label, index) => (
-                  <th key={`period-header-${index + 2}`}>{label}</th>
+          <div className="balance-report__table-wrapper">
+            <table className="balance-report-table" ref={tableRef}>
+              <caption className="balance-report-table__caption">
+                <div className="balance-report-table__caption-row"></div>
+              </caption>
+              <colgroup>
+                <col style={{ width: `${categoryColumnWidth}px` }} />
+                <col />
+                {periodLabels.slice(1).map((_, index) => (
+                  <col key={`period-col-${index + 2}`} />
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {renderAccountRows(
-                baseReport,
-                0,
-                [],
-                comparisonMaps,
-                collapsedPaths,
-                onTogglePath
-              )}
-            </tbody>
-          </table>
+              </colgroup>
+              <thead
+                style={{
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 11,
+                  background: "var(--surface-muted)",
+                }}
+              >
+                <tr>
+                  <th
+                    className="balance-report-table__category"
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      left: 0,
+                      zIndex: 12,
+                      background: "#dbe7ff",
+                    }}
+                  >
+                    <span>Account</span>
+                    <span
+                      className="balance-report-table__column-resizer"
+                      role="presentation"
+                      onMouseDown={startResizingCategory}
+                    />
+                  </th>
+                  <th>{periodLabels[0] ?? "Period 1"}</th>
+                  {periodLabels.slice(1).map((label, index) => (
+                    <th key={`period-header-${index + 2}`}>{label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {renderAccountRows(
+                  baseReport,
+                  0,
+                  [],
+                  comparisonMaps,
+                  collapsedPaths,
+                  onTogglePath
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <p className="balance-report-empty">

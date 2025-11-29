@@ -260,20 +260,30 @@
   border-radius: 14px;
   overflow: visible;
   border: 1px solid var(--border);
+  position: relative;
+}
+
+.balance-report-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  background: #dbe7ff;
 }
 
 .balance-report-table thead th {
   position: sticky;
   top: 0;
   z-index: 5;
-  background: var(--surface-muted);
+  background: #dbe7ff;
   border-bottom: 1px solid var(--border);
 }
 
 .balance-report-table thead th:first-child {
   position: sticky;
+  top: 0;
   left: 0;
-  z-index: 6;
+  z-index: 12;
+  background: var(--surface-muted);
   box-shadow: inset -1px 0 0 var(--border);
 }
 
@@ -287,9 +297,10 @@
 
 .balance-report-table__category {
   position: sticky;
+  top: 0;
   left: 0;
-  z-index: 6;
-  background: var(--surface-muted);
+  z-index: 13;
+  background: #dbe7ff;
   border-right: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -317,15 +328,6 @@
   pointer-events: none;
 }
 
-.balance-report-table thead th:first-child {
-  position: sticky;
-  top: 0;
-  left: 0;
-  z-index: 8;
-  background: var(--surface-muted);
-  box-shadow: inset -1px 0 0 var(--border);
-}
-
 .balance-report-table tbody td:first-child,
 .balance-report-table__name {
   position: sticky;
@@ -346,6 +348,7 @@
   padding: 0.65rem 0.85rem;
   border-bottom: 1px solid var(--border);
   font-size: 0.95rem;
+  border-left: 1px solid var(--border);
 }
 
 .balance-report-table th {

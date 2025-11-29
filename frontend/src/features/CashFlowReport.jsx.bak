@@ -191,60 +191,42 @@ export default function CashFlowReport({
     <section className="balance-content">
       {hasReport ? (
         <div className="balance-report">
-          <div className="balance-report__table-wrapper">
-            <table className="balance-report-table" ref={tableRef}>
-              <caption className="balance-report-table__caption"></caption>
-              <colgroup>
-                <col style={{ width: `${categoryColumnWidth}px` }} />
-                <col />
-                {activeLabels.slice(1).map((_, index) => (
-                  <col key={`cashflow-period-col-${index + 2}`} />
-                ))}
-              </colgroup>
-            <thead
-              style={{
-                position: "sticky",
-                top: 0,
-                zIndex: 11,
-                background: "var(--surface-muted)",
-              }}
-            >
+          <table className="balance-report-table" ref={tableRef}>
+            <caption className="balance-report-table__caption"></caption>
+            <colgroup>
+              <col style={{ width: `${categoryColumnWidth}px` }} />
+              <col />
+              {activeLabels.slice(1).map((_, index) => (
+                <col key={`cashflow-period-col-${index + 2}`} />
+              ))}
+            </colgroup>
+            <thead>
               <tr>
-                <th
-                  className="balance-report-table__category"
-                  style={{
-                    position: "sticky",
-                    top: 0,
-                    left: 0,
-                    zIndex: 12,
-                    background: "#dbe7ff",
-                  }}
-                >
+                <th className="balance-report-table__category">
                   <span>Category</span>
                   <span
                     className="balance-report-table__column-resizer"
-                      role="presentation"
-                      onMouseDown={startResizingCategory}
-                    />
-                  </th>
-                  <th>{activeLabels[0] ?? "Period 1"}</th>
-                  {activeLabels.slice(1).map((label, index) => (
-                    <th key={`cashflow-period-header-${index + 2}`}>{label}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {renderCashFlowRows(
-                  baseReport,
-                  0,
-                  [],
-                  comparisonMaps,
-                  collapsedPaths,
-                  onTogglePath
-                )}
-              </tbody>
-            </table>
-          </div>
+                    role="presentation"
+                    onMouseDown={startResizingCategory}
+                  />
+                </th>
+                <th>{activeLabels[0] ?? "Period 1"}</th>
+                {activeLabels.slice(1).map((label, index) => (
+                  <th key={`cashflow-period-header-${index + 2}`}>{label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {renderCashFlowRows(
+                baseReport,
+                0,
+                [],
+                comparisonMaps,
+                collapsedPaths,
+                onTogglePath
+              )}
+            </tbody>
+          </table>
         </div>
       ) : (
         <p className="balance-report-empty">

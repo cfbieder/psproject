@@ -5,6 +5,9 @@ import "./PageLayout.css";
 import "../features/BalanceDateSelector.css";
 import CashFlowReport from "../features/CashFlowReport.jsx";
 import CashFlowDateSelectorMonthYear from "../features/CashFlowDateSelectorMonthYear.jsx";
+
+//todo: add button below expand/collapsse called Export that exports the current view to a excel file using popup to select file location
+
 // Recursively collect paths of collapsible nodes
 const collectCollapsiblePaths = (nodes, path = [], set = new Set()) => {
   if (!Array.isArray(nodes)) return set;
@@ -17,6 +20,7 @@ const collectCollapsiblePaths = (nodes, path = [], set = new Set()) => {
   }
   return set;
 };
+
 // Add "Net cash flow" category if not present
 const addNetCashFlowCategory = (nodes) => {
   if (!Array.isArray(nodes)) {
@@ -104,10 +108,10 @@ const getMonthlyPeriods = (fromDate, toDate) => {
 };
 // Main Cash Flow Page Component
 export default function CashFlow() {
-  const getMonthStart = () => {
-    const firstOfMonth = new Date();
-    firstOfMonth.setDate(1);
-    return firstOfMonth.toISOString().split("T")[0];
+  const getYearStart = () => {
+    const firstOfYear = new Date();
+    firstOfYear.setMonth(0, 1);
+    return firstOfYear.toISOString().split("T")[0];
   };
   const getMonthEnd = () => {
     const lastOfMonth = new Date();
@@ -116,7 +120,7 @@ export default function CashFlow() {
   };
 
   const [fromDates, setFromDates] = useState(() => {
-    const start = getMonthStart();
+    const start = getYearStart();
     return [start];
   });
   const [toDates, setToDates] = useState(() => {

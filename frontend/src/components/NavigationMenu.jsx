@@ -23,7 +23,7 @@ const menuItems = [
   {
     label: "Analytics",
     submenu: [
-      { label: "Net Worth Chart", path: "/balchart" },
+      { label: "Net Worth Chart", path: "/balance-chart" },
       { label: "Option Analysis", path: "/option-analysis" },
     ],
   },
@@ -33,6 +33,11 @@ const menuItems = [
 ];
 
 export default function NavigationMenu() {
+  const preventDropdownClick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
   return (
     <header className="navbar">
       <div className="navbar__inner">
@@ -54,7 +59,11 @@ export default function NavigationMenu() {
           {menuItems.map((item) =>
             item.submenu ? (
               <div key={item.label} className="dropdown">
-                <button type="button" className="navlink navlink--dropdown">
+                <button
+                  type="button"
+                  className="navlink navlink--dropdown"
+                  onMouseDown={preventDropdownClick}
+                >
                   <span>{item.label}</span>
                   <span aria-hidden>▾</span>
                 </button>

@@ -8,3 +8,5 @@ pnpm-debug.log
 .vscode
 frontend/.next
 frontend/node_modules
+mongo_data/diagnostic.data
+mongo_data

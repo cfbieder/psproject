@@ -53,17 +53,24 @@ app.use((err, req, res) => {
 
 // Library for MongoDB
 var mongoose = require("../../components/node_modules/mongoose");
-//Connect to Mongoose
-mongoose
-  .connect(db, { serverSelectionTimeoutMS: 10000 }) // add timeout without deprecated opts
-  .then(() => {
-    console.log("[SERVER] Connected to MongoDB");
-  })
-  .catch((err) => {
-    console.log(
-      "[SERVER] Error:  Unable to connect to MongDB - make sure Mongo Docker is running"
-    );
-    process.exit();
-  });
+
+const NOT_READY_DELAY = 5000;
+
+const connectWithRetry = () => {
+  mongoose
+    .connect(db, { serverSelectionTimeoutMS: 10000 })
+    .then(() => {
+      console.log("[SERVER] Connected to MongoDB");
+    })
+    .catch((err) => {
+      console.log(
+        "[SERVER] Error: Unable to connect to MongoDB - retrying in a few seconds",
+        err.message
+      );
+      setTimeout(connectWithRetry, NOT_READY_DELAY);
+    });
+};
+
+connectWithRetry();
 
 module.exports = app;

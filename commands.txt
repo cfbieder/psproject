@@ -32,4 +32,5 @@ docker exec mongodb mongodump --out /data/db/backups --db books --collection boo
 #Linus process
 sudo netstat -tulpn | grep :27018
 sudo kill
+sudo ss -tulpn | grep :3001
 

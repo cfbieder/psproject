@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Balance from "./pages/Balance.jsx";
+import BalanceChart from "./pages/BalanceChart.jsx";
 import CashFlow from "./pages/CashFlow.jsx";
 import CashFlowMonthly from "./pages/CashFlowMonthly.jsx";
 import Home from "./pages/Home.jsx";
@@ -18,6 +19,7 @@ function App() {
         <Route path="/upload-ps" element={<UploadPS />} />
         <Route path="/refresh-ps" element={<RefreshPS />} />
         <Route path="/history" element={<History />} />
+        <Route path="/balance-chart" element={<BalanceChart />} />
       </Routes>
     </BrowserRouter>
   );

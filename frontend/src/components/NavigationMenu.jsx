@@ -20,7 +20,15 @@ const menuItems = [
       { label: "Cash Flow Monthly", path: "/cash-flow-monthly" },
     ],
   },
+  {
+    label: "Analytics",
+    submenu: [
+      { label: "Net Worth Chart", path: "/balchart" },
+      { label: "Option Analysis", path: "/option-analysis" },
+    ],
+  },
   { label: "Transactions", submenu: [{ label: "History", path: "/history" }] },
+  { label: "Settings" },
   { label: "Help" },
 ];
 

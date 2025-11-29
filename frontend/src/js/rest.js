@@ -67,4 +67,29 @@ export default class Rest {
     const report = await Rest.fetchJson(path);
     return report?.["Profit & Loss Accounts"] ?? null;
   }
+
+  static async fetchCashFlowTransactions({
+    categories,
+    fromDate,
+    toDate,
+    limit,
+  } = {}) {
+    const params = new URLSearchParams();
+    const categoryList = Array.isArray(categories)
+      ? categories
+      : categories
+      ? [categories]
+      : [];
+    for (const category of categoryList) {
+      if (category) {
+        params.append("category", category);
+      }
+    }
+    if (fromDate) params.set("fromDate", fromDate);
+    if (toDate) params.set("toDate", toDate);
+    if (limit) params.set("limit", limit);
+    const query = params.toString();
+    const path = `/api/cash-flow/transactions${query ? `?${query}` : ""}`;
+    return Rest.fetchJson(path);
+  }
 }

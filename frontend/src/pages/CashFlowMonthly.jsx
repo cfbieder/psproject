@@ -398,6 +398,7 @@ export default function CashFlow() {
               periodLabels={periodLabels}
               collapsedPaths={collapsedPaths}
               onTogglePath={handleTogglePath}
+              periods={monthlyPeriods}
             />
           </div>
         </div>

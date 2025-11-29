@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import Rest from "../js/rest.js";
+import TransactionModal from "./TransactionModal.jsx";
+import "./CashFlowReport.css";
 
-// todo: allow double click on numerical cell which loads a new pop up table with transactions that make up that number
 // Utility to format currency values
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -17,6 +19,21 @@ const formatCurrency = (value) => {
     : currencyFormatter.format(amount);
 };
 
+// Recursively collect leaf category names from a cash flow node
+const collectLeafCategories = (node) => {
+  if (!node || typeof node !== "object") {
+    return [];
+  }
+
+  const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+  if (!hasChildren) {
+    return typeof node.name === "string" && node.name.trim() ? [node.name] : [];
+  }
+
+  return node.children.flatMap((child) => collectLeafCategories(child));
+};
+
+// Build a map of cash flow node paths to their total values
 const buildCashFlowValueMap = (nodes, path = [], map = new Map()) => {
   if (!Array.isArray(nodes)) {
     return map;
@@ -40,7 +57,8 @@ const renderCashFlowRows = (
   path = [],
   comparisonMaps = [],
   collapsedPaths = new Set(),
-  onToggle = () => {}
+  onToggle = () => {},
+  onValueDoubleClick = () => {}
 ) => {
   if (!Array.isArray(nodes) || nodes.length === 0) {
     return [];
@@ -58,20 +76,13 @@ const renderCashFlowRows = (
       <tr key={pathKey}>
         <td
           className="balance-report-table__name"
-          style={{ paddingLeft: `${level * 1.25}rem` }}
+          style={{ "--cashflow-indent-level": level }}
         >
           <button
             type="button"
             onClick={() => onToggle(pathKey)}
             disabled={!hasChildren}
-            style={{
-              marginRight: "0.5rem",
-              background: "none",
-              border: "none",
-              cursor: hasChildren ? "pointer" : "default",
-              padding: 0,
-              fontSize: "0.9rem",
-            }}
+            className="cash-flow-report__toggle-button"
             aria-label={
               hasChildren
                 ? `${isCollapsed ? "Expand" : "Collapse"} ${node.name}`
@@ -86,6 +97,7 @@ const renderCashFlowRows = (
           className={`balance-report-table__value ${
             (node.total ?? 0) < 0 ? "balance-report-table__value--negative" : ""
           }`}
+          onDoubleClick={() => onValueDoubleClick(node, pathKey, 0)}
         >
           {formatCurrency(node.total ?? 0)}
         </td>
@@ -95,6 +107,7 @@ const renderCashFlowRows = (
             className={`balance-report-table__value ${
               value < 0 ? "balance-report-table__value--negative" : ""
             }`}
+            onDoubleClick={() => onValueDoubleClick(node, pathKey, index + 1)}
           >
             {formatCurrency(value)}
           </td>
@@ -110,7 +123,8 @@ const renderCashFlowRows = (
             [...path, node.name],
             comparisonMaps,
             collapsedPaths,
-            onToggle
+            onToggle,
+            onValueDoubleClick
           )
         : [];
 
@@ -124,6 +138,7 @@ export default function CashFlowReport({
   periodLabels,
   collapsedPaths,
   onTogglePath,
+  periods = [],
 }) {
   const activeReports = Array.isArray(reports)
     ? reports.slice(
@@ -140,8 +155,18 @@ export default function CashFlowReport({
     ? periodLabels.slice(0, activeReports.length)
     : [];
   const [categoryColumnWidth, setCategoryColumnWidth] = useState(260);
+  const [transactionModal, setTransactionModal] = useState({
+    isOpen: false,
+    isLoading: false,
+    transactions: [],
+    error: "",
+    title: "",
+  });
   const tableRef = useRef(null);
   const dragCleanup = useRef(() => {});
+  const activePeriods = Array.isArray(periods)
+    ? periods.slice(0, activeReports.length)
+    : [];
 
   useEffect(() => {
     return () => {
@@ -149,6 +174,67 @@ export default function CashFlowReport({
     };
   }, []);
 
+  const closeTransactionModal = () => {
+    setTransactionModal((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  // Handle double-click on value cells to load transactions
+  const handleValueDoubleClick = async (node, pathKey, periodIndex) => {
+    const period = activePeriods[periodIndex];
+    if (!period || !period.fromDate || !period.toDate) {
+      return;
+    }
+
+    const categories = Array.from(new Set(collectLeafCategories(node)));
+    if (!categories.length) {
+      return;
+    }
+
+    const pathLabel =
+      (pathKey && pathKey.includes(">") && pathKey.split(">").join(" / ")) ||
+      node?.name ||
+      "Category";
+    const periodLabel =
+      activeLabels[periodIndex] ??
+      period.label ??
+      (period.fromDate && period.toDate
+        ? `${period.fromDate} to ${period.toDate}`
+        : `Period ${periodIndex + 1}`);
+
+    setTransactionModal({
+      isOpen: true,
+      isLoading: true,
+      transactions: [],
+      error: "",
+      title: `${pathLabel} - ${periodLabel}`,
+    });
+
+    try {
+      const data = await Rest.fetchCashFlowTransactions({
+        categories,
+        fromDate: period.fromDate,
+        toDate: period.toDate,
+      });
+      const transactions = Array.isArray(data?.transactions)
+        ? data.transactions
+        : Array.isArray(data)
+        ? data
+        : [];
+      setTransactionModal((prev) => ({
+        ...prev,
+        isLoading: false,
+        transactions,
+      }));
+    } catch (error) {
+      setTransactionModal((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: error?.message ?? "Failed to load transactions",
+      }));
+    }
+  };
+
+  // Handle column resizing
   const startResizingCategory = (event) => {
     event.preventDefault();
     const tableRect = tableRef.current?.getBoundingClientRect();
@@ -189,7 +275,7 @@ export default function CashFlowReport({
   };
 
   return (
-    <section className="balance-content">
+    <section className="balance-content cash-flow-report">
       {hasReport ? (
         <div className="balance-report">
           <div className="balance-report__table-wrapper">
@@ -202,25 +288,9 @@ export default function CashFlowReport({
                   <col key={`cashflow-period-col-${index + 2}`} />
                 ))}
               </colgroup>
-              <thead
-                style={{
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 11,
-                  background: "var(--surface-muted)",
-                }}
-              >
+              <thead>
                 <tr>
-                  <th
-                    className="balance-report-table__category"
-                    style={{
-                      position: "sticky",
-                      top: 0,
-                      left: 0,
-                      zIndex: 12,
-                      background: "#dbe7ff",
-                    }}
-                  >
+                  <th className="balance-report-table__category">
                     <span>Category</span>
                     <span
                       className="balance-report-table__column-resizer"
@@ -241,7 +311,8 @@ export default function CashFlowReport({
                   [],
                   comparisonMaps,
                   collapsedPaths,
-                  onTogglePath
+                  onTogglePath,
+                  handleValueDoubleClick
                 )}
               </tbody>
             </table>
@@ -251,6 +322,13 @@ export default function CashFlowReport({
         <p className="balance-report-empty">
           Generate a report to view the cash flow details.
         </p>
+      )}
+      {transactionModal.isOpen && (
+        <TransactionModal
+          transactionModal={transactionModal}
+          onClose={closeTransactionModal}
+          formatCurrency={formatCurrency}
+        />
       )}
     </section>
   );

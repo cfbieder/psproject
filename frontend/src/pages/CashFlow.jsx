@@ -85,6 +85,7 @@ export default function CashFlow() {
   const [collapsedPaths, setCollapsedPaths] = useState(new Set());
   const [includeUnrealizedGL, setIncludeUnrealizedGL] = useState(false);
   const [transfers, setTransfers] = useState("exclude");
+  const [reportPeriods, setReportPeriods] = useState([]);
 
   const handleFromDateChange = (index, value) => {
     setFromDates((prev) => {
@@ -111,6 +112,10 @@ export default function CashFlow() {
         (_, index) => ({
           fromDate: fromDates[index],
           toDate: toDates[index],
+          label:
+            fromDates[index] && toDates[index]
+              ? `${fromDates[index]} to ${toDates[index]}`
+              : `Period ${index + 1}`,
         })
       );
       const data = await Promise.all(
@@ -125,10 +130,12 @@ export default function CashFlow() {
       );
       setReports(data.map(addNetCashFlowCategory));
       setCollapsedPaths(new Set());
+      setReportPeriods(activePeriods);
     } catch (err) {
       console.error("Failed to fetch cash flow report:", err);
       setError(err?.message ?? "Failed to fetch cash flow report");
       setReports([]);
+      setReportPeriods([]);
     } finally {
       setIsLoading(false);
     }
@@ -153,14 +160,23 @@ export default function CashFlow() {
   const isFullyCollapsed =
     collapsiblePaths.size > 0 && collapsedPaths.size === collapsiblePaths.size;
   const activePeriodCount = Math.min(Math.max(periodCount ?? 1, 1), 3);
-  const periodLabels = Array.from({ length: activePeriodCount }).map(
-    (_, index) => {
-      const fromDate = fromDates[index] ?? "";
-      const toDate = toDates[index] ?? "";
-      return fromDate && toDate
-        ? `${fromDate} to ${toDate}`
-        : `Period ${index + 1}`;
-    }
+  const displayPeriods =
+    reportPeriods.length > 0
+      ? reportPeriods
+      : Array.from({ length: activePeriodCount }).map((_, index) => ({
+          fromDate: fromDates[index],
+          toDate: toDates[index],
+          label:
+            fromDates[index] && toDates[index]
+              ? `${fromDates[index]} to ${toDates[index]}`
+              : `Period ${index + 1}`,
+        }));
+  const periodLabels = displayPeriods.map((period, index) =>
+    period?.label && typeof period.label === "string"
+      ? period.label
+      : period?.fromDate && period?.toDate
+      ? `${period.fromDate} to ${period.toDate}`
+      : `Period ${index + 1}`
   );
 
   const handleToggleCollapseAll = () => {
@@ -184,6 +200,7 @@ export default function CashFlow() {
               periodLabels={periodLabels}
               collapsedPaths={collapsedPaths}
               onTogglePath={handleTogglePath}
+              periods={displayPeriods}
             />
           </div>
         </div>

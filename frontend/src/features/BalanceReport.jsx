@@ -32,6 +32,7 @@ const buildAccountValueMap = (accounts, path = [], map = new Map()) => {
   return map;
 };
 
+// Recursively renders account rows with indentation and expand/collapse functionality
 const renderAccountRows = (
   accounts,
   level = 0,

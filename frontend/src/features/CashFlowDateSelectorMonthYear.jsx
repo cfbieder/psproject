@@ -69,6 +69,7 @@ export default function CashFlowDateSelectorMonthYear({
   onToggleCollapseAll,
   isFullyCollapsed,
   error,
+  showPeriodSelector = true,
 }) {
   const clampedPeriodCount = Math.min(Math.max(activePeriodCount ?? 1, 1), 3);
   const normalizedFromDates = Array.isArray(fromDates) ? fromDates : [];
@@ -136,11 +137,13 @@ export default function CashFlowDateSelectorMonthYear({
     <div className="balance-layout">
       <aside className="balance-panel">
         <div className="balance-date-picker">
-          <PeriodCountSelector
-            id="cashflow-period-count"
-            value={clampedPeriodCount}
-            onChange={onPeriodCountChange}
-          />
+          {showPeriodSelector && (
+            <PeriodCountSelector
+              id="cashflow-period-count"
+              value={clampedPeriodCount}
+              onChange={onPeriodCountChange}
+            />
+          )}
           {Array.from({ length: clampedPeriodCount }).map((_, index) => {
             const periodLabel = index + 1;
             const fromParts = getFromParts(index);

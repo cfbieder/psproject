@@ -11,14 +11,16 @@ const menuItems = [
     ],
   },
   { label: "Dashboard" },
+  { label: "History", path: "/history" },
   {
     label: "Reports",
     submenu: [
       { label: "Balance Summary", path: "/balance" },
       { label: "Cash Flow Summary", path: "/cash-flow" },
+      { label: "Cash Flow Monthly", path: "/cash-flow-monthly" },
     ],
   },
-  { label: "Transactions" },
+  { label: "Transactions", submenu: [{ label: "History", path: "/history" }] },
   { label: "Help" },
 ];
 

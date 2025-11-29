@@ -13,6 +13,7 @@ import "./PageLayout.css";
 export default function RefreshPS() {
   const [lastIngestStatus, setLastIngestStatus] = useState(null);
   const [lastRefreshStatus, setLastRefreshStatus] = useState(null);
+  const [psDataCountStatus, setPsDataCountStatus] = useState(null);
   const [refreshStatus, setRefreshStatus] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [newTransactions, setNewTransactions] = useState([]);
@@ -85,6 +86,26 @@ export default function RefreshPS() {
       setLastRefreshStatus({
         type: "error",
         message,
+      });
+    }
+
+    try {
+      const countResult = await Rest.fetchJson("/api/psdata/count");
+      const count =
+        Number.isFinite(countResult?.count) && countResult.count >= 0
+          ? countResult.count
+          : null;
+      setPsDataCountStatus({
+        type: "info",
+        message:
+          count !== null
+            ? `PS records in MongoDB: ${count}`
+            : "PS record count unavailable.",
+      });
+    } catch (countError) {
+      setPsDataCountStatus({
+        type: "error",
+        message: countError?.message ?? "Unable to load PS record count.",
       });
     }
   }, []);
@@ -259,6 +280,7 @@ export default function RefreshPS() {
             <UploadFeedback
               lastIngestStatus={lastIngestStatus}
               lastRefreshStatus={lastRefreshStatus}
+              psDataCountStatus={psDataCountStatus}
               uploadStatus={refreshStatus}
               clearStatus={null}
               ingestStatus={null}

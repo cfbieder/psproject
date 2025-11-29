@@ -18,46 +18,88 @@ export default function UploadPS() {
   const [analyzeStatus, setAnalyzeStatus] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [lastIngestStatus, setLastIngestStatus] = useState(null);
-
-  const fetchLastIngest = useCallback(async () => {
+  const [lastRefreshStatus, setLastRefreshStatus] = useState(null);
+  const [psDataCountStatus, setPsDataCountStatus] = useState(null);
+  const fetchAppStatus = useCallback(async () => {
     try {
       const appdata = await Rest.fetchJson("/api/getappdata");
       const records = Array.isArray(appdata) ? appdata : [];
-      const ingestDates = records
-        .map((item) => item?.lastIngest)
-        .map((date) => (date ? new Date(date) : null))
-        .filter(
-          (date) => date instanceof Date && !Number.isNaN(date.getTime())
-        );
+      const parseDates = (field) =>
+        records
+          .map((item) => item?.[field])
+          .map((date) => (date ? new Date(date) : null))
+          .filter(
+            (date) => date instanceof Date && !Number.isNaN(date.getTime())
+          );
+      const latestDate = (dates) =>
+        dates.length === 0
+          ? null
+          : dates.reduce(
+              (latest, current) => (current > latest ? current : latest),
+              dates[0]
+            );
 
-      if (ingestDates.length === 0) {
-        setLastIngestStatus({
-          type: "info",
-          message: "No ingest has been recorded yet.",
-        });
-        return;
-      }
+      const latestIngest = latestDate(parseDates("lastIngest"));
+      const latestRefresh = latestDate(parseDates("lastRefresh"));
 
-      const latestIngest = ingestDates.reduce(
-        (latest, current) => (current > latest ? current : latest),
-        ingestDates[0]
+      setLastIngestStatus(
+        latestIngest
+          ? {
+              type: "info",
+              message: `Last ingest: ${latestIngest.toLocaleString()}`,
+            }
+          : {
+              type: "info",
+              message: "No ingest has been recorded yet.",
+            }
       );
-
-      setLastIngestStatus({
-        type: "info",
-        message: `Last ingest: ${latestIngest.toLocaleString()}`,
-      });
+      setLastRefreshStatus(
+        latestRefresh
+          ? {
+              type: "info",
+              message: `Last refresh: ${latestRefresh.toLocaleString()}`,
+            }
+          : {
+              type: "info",
+              message: "No refresh has been recorded yet.",
+            }
+      );
     } catch (error) {
+      const message = error?.message ?? "Unable to load app data.";
       setLastIngestStatus({
         type: "error",
-        message: error?.message ?? "Unable to load last ingest date.",
+        message,
+      });
+      setLastRefreshStatus({
+        type: "error",
+        message,
+      });
+    }
+
+    try {
+      const countResult = await Rest.fetchJson("/api/psdata/count");
+      const count =
+        Number.isFinite(countResult?.count) && countResult.count >= 0
+          ? countResult.count
+          : null;
+      setPsDataCountStatus({
+        type: "info",
+        message:
+          count !== null
+            ? `PS records in MongoDB: ${count}`
+            : "PS record count unavailable.",
+      });
+    } catch (countError) {
+      setPsDataCountStatus({
+        type: "error",
+        message: countError?.message ?? "Unable to load PS record count.",
       });
     }
   }, []);
 
   useEffect(() => {
-    fetchLastIngest();
-  }, [fetchLastIngest]);
+    fetchAppStatus();
+  }, [fetchAppStatus]);
 
   // Handle the upload and ingestion of PS data
   const handleUploadClick = async () => {
@@ -91,7 +133,7 @@ export default function UploadPS() {
         type: "success",
         message: `PS ingest complete: ${inserted} inserted, ${updated} updated, ${skipped} skipped.`,
       });
-      fetchLastIngest();
+      fetchAppStatus();
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -131,7 +173,7 @@ export default function UploadPS() {
         message:
           "All PS records cleared from MongoDB (clear operation complete).",
       });
-      fetchLastIngest();
+      fetchAppStatus();
     } catch (error) {
       setClearStatus({
         type: "error",
@@ -270,6 +312,8 @@ export default function UploadPS() {
           <ul className="upload-guidance">
             <UploadFeedback
               lastIngestStatus={lastIngestStatus}
+              lastRefreshStatus={lastRefreshStatus}
+              psDataCountStatus={psDataCountStatus}
               uploadStatus={uploadStatus}
               clearStatus={clearStatus}
               ingestStatus={ingestStatus}

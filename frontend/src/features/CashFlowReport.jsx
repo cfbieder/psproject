@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+
 // Utility to format currency values
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -123,7 +125,10 @@ export default function CashFlowReport({
   onTogglePath,
 }) {
   const activeReports = Array.isArray(reports)
-    ? reports.slice(0, Math.min(periodLabels?.length ?? 1, 3))
+    ? reports.slice(
+        0,
+        Math.min(periodLabels?.length ?? reports.length, reports.length)
+      )
     : [];
   const baseReport = activeReports[0];
   const hasReport = Array.isArray(baseReport) && baseReport.length > 0;
@@ -133,26 +138,63 @@ export default function CashFlowReport({
   const activeLabels = Array.isArray(periodLabels)
     ? periodLabels.slice(0, activeReports.length)
     : [];
+  const [categoryColumnWidth, setCategoryColumnWidth] = useState(260);
+  const tableRef = useRef(null);
+  const dragCleanup = useRef(() => {});
+
+  useEffect(() => {
+    return () => {
+      dragCleanup.current();
+    };
+  }, []);
+
+  const startResizingCategory = (event) => {
+    event.preventDefault();
+    const tableRect = tableRef.current?.getBoundingClientRect();
+    if (!tableRect) {
+      return;
+    }
+
+    const minWidth = 160;
+    const maxWidth = 520;
+
+    const updateWidth = (clientX) => {
+      const rect = tableRef.current?.getBoundingClientRect() ?? tableRect;
+      if (!rect || rect.width <= 0) {
+        return;
+      }
+      const relativeX = Math.min(Math.max(0, clientX - rect.left), rect.width);
+      const clamped = Math.min(maxWidth, Math.max(minWidth, relativeX));
+      setCategoryColumnWidth(clamped);
+    };
+
+    const handlePointerMove = (moveEvent) => {
+      updateWidth(moveEvent.clientX);
+    };
+
+    const stopResizing = () => {
+      document.body.style.cursor = "";
+      document.removeEventListener("mousemove", handlePointerMove);
+      document.removeEventListener("mouseup", stopResizing);
+      dragCleanup.current = () => {};
+    };
+
+    dragCleanup.current = stopResizing;
+
+    document.body.style.cursor = "col-resize";
+    document.addEventListener("mousemove", handlePointerMove);
+    document.addEventListener("mouseup", stopResizing);
+    updateWidth(event.clientX);
+  };
 
   return (
     <section className="balance-content">
-      <h1 className="page__title">Cash Flow Overview</h1>
       {hasReport ? (
         <div className="balance-report">
-          <div className="balance-report__header">
-            <h2 className="balance-report__title">Cash Flow Summary</h2>
-            <span className="balance-report__date">
-              {activeLabels[0]
-                ? `For ${activeLabels[0]}`
-                : "For selected period"}
-              {activeLabels.length > 1
-                ? ` vs ${activeLabels.slice(1).join(" vs ")}`
-                : ""}
-            </span>
-          </div>
-          <table className="balance-report-table">
+          <table className="balance-report-table" ref={tableRef}>
+            <caption className="balance-report-table__caption"></caption>
             <colgroup>
-              <col style={{ width: "75%" }} />
+              <col style={{ width: `${categoryColumnWidth}px` }} />
               <col />
               {activeLabels.slice(1).map((_, index) => (
                 <col key={`cashflow-period-col-${index + 2}`} />
@@ -160,12 +202,16 @@ export default function CashFlowReport({
             </colgroup>
             <thead>
               <tr>
-                <th>Category</th>
-                <th>{`Amount (${activeLabels[0] ?? "Period 1"})`}</th>
+                <th className="balance-report-table__category">
+                  <span
+                    className="balance-report-table__column-resizer"
+                    role="presentation"
+                    onMouseDown={startResizingCategory}
+                  />
+                </th>
+                <th>{activeLabels[0] ?? "Period 1"}</th>
                 {activeLabels.slice(1).map((label, index) => (
-                  <th
-                    key={`cashflow-period-header-${index + 2}`}
-                  >{`Amount (${label})`}</th>
+                  <th key={`cashflow-period-header-${index + 2}`}>{label}</th>
                 ))}
               </tr>
             </thead>

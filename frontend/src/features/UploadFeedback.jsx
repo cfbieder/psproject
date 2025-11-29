@@ -27,6 +27,7 @@ const renderStatusItem = (status, includeDetails = false) => {
 export default function UploadFeedback({
   lastIngestStatus,
   lastRefreshStatus,
+  psDataCountStatus,
   uploadStatus,
   clearStatus,
   ingestStatus,
@@ -36,6 +37,7 @@ export default function UploadFeedback({
     <>
       {renderStatusItem(lastIngestStatus)}
       {renderStatusItem(lastRefreshStatus)}
+      {renderStatusItem(psDataCountStatus)}
       {renderStatusItem(uploadStatus)}
       {renderStatusItem(clearStatus)}
       {renderStatusItem(ingestStatus)}

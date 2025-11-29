@@ -174,6 +174,18 @@ router.get("/getappdata", async (req, res) => {
   }
 });
 
+router.get("/psdata/count", async (req, res) => {
+  try {
+    const count = await PSdata.db.collection("psdata").countDocuments({});
+    return res.json({ count });
+  } catch (error) {
+    console.error("[PSDATA-COUNT] Failed to fetch psdata count:", error);
+    return res.status(500).json({
+      error: "Failed to count PS data records in MongoDB",
+    });
+  }
+});
+
 router.post("/appdata/last-refresh", async (req, res) => {
   try {
     const now = new Date();

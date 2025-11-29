@@ -70,12 +70,15 @@ export default function CashFlowDateSelectorMonthYear({
   isFullyCollapsed,
   error,
   showPeriodSelector = true,
+  onExport,
+  canExport = true,
 }) {
   const clampedPeriodCount = Math.min(Math.max(activePeriodCount ?? 1, 1), 3);
   const normalizedFromDates = Array.isArray(fromDates) ? fromDates : [];
   const normalizedToDates = Array.isArray(toDates) ? toDates : [];
   const isCollapseToggleDisabled =
     isLoading || (collapsiblePaths?.size ?? 0) === 0;
+  const isExportDisabled = isLoading || !canExport;
 
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
@@ -261,6 +264,16 @@ export default function CashFlowDateSelectorMonthYear({
         >
           {isFullyCollapsed ? "Expand All" : "Collapse All"}
         </button>
+        {typeof onExport === "function" && (
+          <button
+            className="generate-report-button"
+            type="button"
+            onClick={onExport}
+            disabled={isExportDisabled}
+          >
+            Export
+          </button>
+        )}
         {error && (
           <p
             className="balance-report-empty"

@@ -6,8 +6,6 @@ import "../features/BalanceDateSelector.css";
 import CashFlowReport from "../features/CashFlowReport.jsx";
 import CashFlowDateSelectorMonthYear from "../features/CashFlowDateSelectorMonthYear.jsx";
 
-//todo: add button below expand/collapsse called Export that exports the current view to a excel file using popup to select file location
-
 // Recursively collect paths of collapsible nodes
 const collectCollapsiblePaths = (nodes, path = [], set = new Set()) => {
   if (!Array.isArray(nodes)) return set;
@@ -106,6 +104,131 @@ const getMonthlyPeriods = (fromDate, toDate) => {
 
   return periods;
 };
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+const formatCurrency = (value) => {
+  const amount = Number.isFinite(value) ? value : 0;
+  return amount < 0
+    ? `(${currencyFormatter.format(Math.abs(amount))})`
+    : currencyFormatter.format(amount);
+};
+
+const buildCashFlowValueMap = (nodes, path = [], map = new Map()) => {
+  if (!Array.isArray(nodes)) {
+    return map;
+  }
+
+  for (const node of nodes) {
+    if (!node || typeof node !== "object") continue;
+    const name =
+      typeof node.name === "string" ? node.name : String(node.name ?? "");
+    const pathKey = [...path, name].join(">");
+    const total = Number.isFinite(node.total) ? node.total : 0;
+    map.set(pathKey, total);
+    if (Array.isArray(node.children) && node.children.length > 0) {
+      buildCashFlowValueMap(node.children, [...path, name], map);
+    }
+  }
+
+  return map;
+};
+
+const buildExportRows = (
+  nodes,
+  collapsedPaths,
+  valueMaps,
+  path = [],
+  depth = 0
+) => {
+  if (!Array.isArray(nodes)) {
+    return [];
+  }
+
+  return nodes.flatMap((node) => {
+    if (!node || typeof node !== "object") {
+      return [];
+    }
+    const name =
+      typeof node.name === "string" ? node.name : String(node.name ?? "");
+    const pathKey = [...path, name].join(">");
+    const hasChildren =
+      Array.isArray(node.children) && node.children.length > 0;
+    const row = {
+      name,
+      depth,
+      values: valueMaps.map((map) => map.get(pathKey) ?? 0),
+    };
+    const children =
+      hasChildren && !collapsedPaths.has(pathKey)
+        ? buildExportRows(
+            node.children,
+            collapsedPaths,
+            valueMaps,
+            [...path, name],
+            depth + 1
+          )
+        : [];
+    return [row, ...children];
+  });
+};
+
+const escapeCsvValue = (value) => {
+  const stringValue = String(value ?? "");
+  const escaped = stringValue.replace(/"/g, '""');
+  return /[",\n]/.test(escaped) ? `"${escaped}"` : escaped;
+};
+
+const buildCsvContent = (labels, rows) => {
+  const header = ["Category", ...labels];
+  const lines = [
+    header,
+    ...rows.map((row) => [
+      `${" ".repeat(row.depth * 2)}${row.name}`,
+      ...row.values.map((value) => formatCurrency(value)),
+    ]),
+  ];
+  return lines.map((line) => line.map(escapeCsvValue).join(",")).join("\r\n");
+};
+
+const downloadBlob = async (blob, suggestedName) => {
+  if (typeof window === "undefined") return;
+
+  if (window.showSaveFilePicker) {
+    const handle = await window.showSaveFilePicker({
+      suggestedName,
+      types: [
+        {
+          description: "Excel (CSV)",
+          accept: {
+            "text/csv": [".csv"],
+            "application/vnd.ms-excel": [".xls"],
+          },
+        },
+      ],
+    });
+    const writable = await handle.createWritable();
+    await writable.write(blob);
+    await writable.close();
+    return;
+  }
+
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = suggestedName;
+  anchor.style.display = "none";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+};
+
 // Main Cash Flow Page Component
 export default function CashFlow() {
   const getYearStart = () => {
@@ -225,6 +348,45 @@ export default function CashFlow() {
     });
   };
 
+  const handleExport = async () => {
+    const activeReports = Array.isArray(reports)
+      ? reports.slice(
+          0,
+          Math.min(monthlyPeriods.length || reports.length, reports.length)
+        )
+      : [];
+    const baseReport = activeReports[0];
+    if (!Array.isArray(baseReport) || baseReport.length === 0) {
+      return;
+    }
+
+    const valueMaps = activeReports.map((report) =>
+      buildCashFlowValueMap(report)
+    );
+    const rows = buildExportRows(baseReport, collapsedPaths, valueMaps);
+    const labels =
+      monthlyPeriods.length > 0
+        ? monthlyPeriods
+            .slice(0, activeReports.length)
+            .map((period) => period.label)
+        : activeReports.map((_, index) => `Period ${index + 1}`);
+    const csv = buildCsvContent(labels, rows);
+    const blob = new Blob([csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+    try {
+      await downloadBlob(blob, `cash-flow-${Date.now()}.csv`);
+    } catch (err) {
+      if (err?.name === "AbortError") {
+        return;
+      }
+      console.error("Failed to export cash flow report", err);
+    }
+  };
+
+  const hasReport =
+    Array.isArray(reports?.[0]) && (reports?.[0]?.length ?? 0) > 0;
+
   return (
     <div className="page-shell">
       <NavigationMenu />
@@ -257,6 +419,8 @@ export default function CashFlow() {
             isFullyCollapsed={isFullyCollapsed}
             error={error}
             showPeriodSelector={false}
+            onExport={handleExport}
+            canExport={hasReport}
           />
         </div>
       </main>

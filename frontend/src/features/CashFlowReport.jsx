@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+// todo: allow double click on numerical cell which loads a new pop up table with transactions that make up that number
 // Utility to format currency values
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -201,28 +202,28 @@ export default function CashFlowReport({
                   <col key={`cashflow-period-col-${index + 2}`} />
                 ))}
               </colgroup>
-            <thead
-              style={{
-                position: "sticky",
-                top: 0,
-                zIndex: 11,
-                background: "var(--surface-muted)",
-              }}
-            >
-              <tr>
-                <th
-                  className="balance-report-table__category"
-                  style={{
-                    position: "sticky",
-                    top: 0,
-                    left: 0,
-                    zIndex: 12,
-                    background: "#dbe7ff",
-                  }}
-                >
-                  <span>Category</span>
-                  <span
-                    className="balance-report-table__column-resizer"
+              <thead
+                style={{
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 11,
+                  background: "var(--surface-muted)",
+                }}
+              >
+                <tr>
+                  <th
+                    className="balance-report-table__category"
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      left: 0,
+                      zIndex: 12,
+                      background: "#dbe7ff",
+                    }}
+                  >
+                    <span>Category</span>
+                    <span
+                      className="balance-report-table__column-resizer"
                       role="presentation"
                       onMouseDown={startResizingCategory}
                     />

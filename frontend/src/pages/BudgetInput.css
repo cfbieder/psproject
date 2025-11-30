@@ -1,0 +1,49 @@
+.budget-input-grid {
+  width: 100%;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(280px, 1fr);
+  grid-template-rows: auto 1fr;
+  gap: 1.5rem;
+  grid-column: 1 / -1;
+  align-items: stretch;
+}
+
+.budget-region {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  padding: 2rem;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.selector-area {
+  grid-column: 1 / -1;
+}
+
+.budget-region__label {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 600;
+  color: var(--danger);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.budget-region__description {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.balances-area {
+  min-height: 320px;
+}
+
+.input-area {
+  min-height: 320px;
+}

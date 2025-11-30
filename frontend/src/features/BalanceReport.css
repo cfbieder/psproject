@@ -1,0 +1,41 @@
+.balance-report {
+  --balance-indent-unit: 1.25rem;
+}
+
+.balance-report .balance-report-table__name {
+  padding-left: calc(
+    var(--balance-indent-level, 0) * var(--balance-indent-unit)
+  );
+}
+
+.balance-report__toggle-button {
+  margin-right: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.balance-report__toggle-button:disabled {
+  cursor: default;
+}
+
+.balance-report-table__head {
+  position: sticky;
+  top: 0;
+  z-index: 11;
+  background: var(--surface-muted);
+}
+
+.balance-report-table__name-text {
+  cursor: pointer;
+}
+
+.balance-report-table__row--highlighted td {
+  background-color: rgba(87, 188, 103, 0.22);
+}
+
+.balance-report-table tbody tr.balance-report-table__row--highlighted td {
+  background: rgba(87, 188, 103, 0.22) !important;
+}

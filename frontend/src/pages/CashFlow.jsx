@@ -118,7 +118,7 @@ export default function CashFlow() {
               : `Period ${index + 1}`,
         })
       );
-      const data = await Promise.all(
+      const rawReports = await Promise.all(
         activePeriods.map(({ fromDate, toDate }) =>
           Rest.fetchCashFlowReport({
             fromDate,
@@ -128,14 +128,17 @@ export default function CashFlow() {
           })
         )
       );
-      setReports(data.map(addNetCashFlowCategory));
-      setCollapsedPaths(new Set());
+      const processedReports = rawReports.map(addNetCashFlowCategory);
+      setReports(processedReports);
+      const collapsiblePaths = collectCollapsiblePaths(processedReports?.[0]);
+      setCollapsedPaths(new Set(collapsiblePaths));
       setReportPeriods(activePeriods);
     } catch (err) {
       console.error("Failed to fetch cash flow report:", err);
       setError(err?.message ?? "Failed to fetch cash flow report");
       setReports([]);
       setReportPeriods([]);
+      setCollapsedPaths(new Set());
     } finally {
       setIsLoading(false);
     }

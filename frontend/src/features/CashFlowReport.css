@@ -25,3 +25,15 @@
   z-index: 11;
   background: var(--surface-muted);
 }
+
+.cash-flow-report .balance-report-table__name-text {
+  cursor: pointer;
+}
+
+.balance-report-table__row--highlighted td {
+  background-color: rgba(87, 188, 103, 0.22);
+}
+
+.balance-report-table tbody tr.balance-report-table__row--highlighted td {
+  background-color: rgba(87, 188, 103, 0.22) !important;
+}

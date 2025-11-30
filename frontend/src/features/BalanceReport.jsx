@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-
+import "./BalanceReport.css";
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -39,7 +39,9 @@ const renderAccountRows = (
   path = [],
   comparisonMaps = [],
   collapsedPaths = new Set(),
-  onToggle = () => {}
+  onToggle = () => {},
+  highlightedPaths = new Set(),
+  onToggleHighlight = () => {}
 ) => {
   if (!Array.isArray(accounts) || accounts.length === 0) {
     return [];
@@ -53,24 +55,25 @@ const renderAccountRows = (
     const comparisonValues = comparisonMaps.map(
       (map) => map?.get(pathKey) ?? 0
     );
+    const isHighlighted = highlightedPaths.has(pathKey);
     const row = (
-      <tr key={`${account.name}-${level}-${account.totalUSD}`}>
+      <tr
+        key={`${account.name}-${level}-${account.totalUSD}`}
+        className={isHighlighted ? "balance-report-table__row--highlighted" : ""}
+      >
         <td
           className="balance-report-table__name"
-          style={{ paddingLeft: `${level * 1.25}rem` }}
+          style={{ "--balance-indent-level": level }}
+          onClick={() => onToggleHighlight(pathKey)}
         >
           <button
             type="button"
-            onClick={() => onToggle(pathKey)}
-            disabled={!hasChildren}
-            style={{
-              marginRight: "0.5rem",
-              background: "none",
-              border: "none",
-              cursor: hasChildren ? "pointer" : "default",
-              padding: 0,
-              fontSize: "0.9rem",
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggle(pathKey);
             }}
+            disabled={!hasChildren}
+            className="balance-report__toggle-button"
             aria-label={
               hasChildren
                 ? `${isCollapsed ? "Expand" : "Collapse"} ${account.name}`
@@ -79,7 +82,12 @@ const renderAccountRows = (
           >
             {hasChildren ? (isCollapsed ? "+" : "−") : "\u00a0"}
           </button>
-          {account.name}
+          <span
+            className="balance-report-table__name-text"
+            onClick={() => onToggleHighlight(pathKey)}
+          >
+            {account.name}
+          </span>
         </td>
         <td
           className={`balance-report-table__value ${
@@ -111,7 +119,9 @@ const renderAccountRows = (
             [...path, account.name],
             comparisonMaps,
             collapsedPaths,
-            onToggle
+            onToggle,
+            highlightedPaths,
+            onToggleHighlight
           )
         : [];
 
@@ -138,8 +148,20 @@ export default function BalanceReport({
     (_, index) => periodDates?.[index] ?? `Period ${index + 1}`
   );
   const [categoryColumnWidth, setCategoryColumnWidth] = useState(260);
+  const [highlightedRows, setHighlightedRows] = useState(new Set());
   const tableRef = useRef(null);
   const dragCleanup = useRef(() => {});
+  const toggleRowHighlight = (pathKey) => {
+    setHighlightedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(pathKey)) {
+        next.delete(pathKey);
+      } else {
+        next.add(pathKey);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     return () => {
@@ -202,25 +224,9 @@ export default function BalanceReport({
                   <col key={`period-col-${index + 2}`} />
                 ))}
               </colgroup>
-              <thead
-                style={{
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 11,
-                  background: "var(--surface-muted)",
-                }}
-              >
+              <thead className="balance-report-table__head">
                 <tr>
-                  <th
-                    className="balance-report-table__category"
-                    style={{
-                      position: "sticky",
-                      top: 0,
-                      left: 0,
-                      zIndex: 12,
-                      background: "#dbe7ff",
-                    }}
-                  >
+                  <th className="balance-report-table__category">
                     <span>Account</span>
                     <span
                       className="balance-report-table__column-resizer"
@@ -241,7 +247,9 @@ export default function BalanceReport({
                   [],
                   comparisonMaps,
                   collapsedPaths,
-                  onTogglePath
+                  onTogglePath,
+                  highlightedRows,
+                  toggleRowHighlight
                 )}
               </tbody>
             </table>

@@ -4,7 +4,7 @@ import Rest from "../js/rest.js";
 import "./PageLayout.css";
 import "../features/BalanceDateSelector.css";
 import CashFlowReport from "../features/CashFlowReport.jsx";
-import CashFlowDateSelectorMonthYear from "../features/CashFlowDateSelectorMonthYear.jsx";
+import CashFlowDateSelectorMonthYearOne from "../features/CashFlowDateSelectorMonthYearOneP.jsx";
 
 // Recursively collect paths of collapsible nodes
 const collectCollapsiblePaths = (nodes, path = [], set = new Set()) => {
@@ -290,7 +290,7 @@ export default function CashFlow() {
 
     setIsLoading(true);
     try {
-      const data = await Promise.all(
+      const rawReports = await Promise.all(
         periods.map(({ fromDate, toDate }) =>
           Rest.fetchCashFlowReport({
             fromDate,
@@ -300,9 +300,11 @@ export default function CashFlow() {
           })
         )
       );
-      setReports(data.map(addNetCashFlowCategory));
+      const processedReports = rawReports.map(addNetCashFlowCategory);
+      setReports(processedReports);
       setMonthlyPeriods(periods);
-      setCollapsedPaths(new Set());
+      const collapsiblePaths = collectCollapsiblePaths(processedReports?.[0]);
+      setCollapsedPaths(new Set(collapsiblePaths));
     } catch (err) {
       console.error("Failed to fetch monthly cash flow data:", err);
       setError(err?.message ?? "Failed to fetch cash flow report");
@@ -403,7 +405,7 @@ export default function CashFlow() {
           </div>
         </div>
         <div className="balance-layout-holder">
-          <CashFlowDateSelectorMonthYear
+          <CashFlowDateSelectorMonthYearOne
             activePeriodCount={activePeriodCount}
             fromDates={fromDates}
             toDates={toDates}

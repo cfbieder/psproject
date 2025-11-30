@@ -58,7 +58,9 @@ const renderCashFlowRows = (
   comparisonMaps = [],
   collapsedPaths = new Set(),
   onToggle = () => {},
-  onValueDoubleClick = () => {}
+  onValueDoubleClick = () => {},
+  highlightedPaths = new Set(),
+  onToggleHighlight = () => {}
 ) => {
   if (!Array.isArray(nodes) || nodes.length === 0) {
     return [];
@@ -72,15 +74,23 @@ const renderCashFlowRows = (
     const comparisonValues = comparisonMaps.map(
       (map) => map?.get(pathKey) ?? 0
     );
+    const isHighlighted = highlightedPaths.has(pathKey);
     const row = (
-      <tr key={pathKey}>
+      <tr
+        key={pathKey}
+        className={isHighlighted ? "balance-report-table__row--highlighted" : ""}
+      >
         <td
           className="balance-report-table__name"
           style={{ "--cashflow-indent-level": level }}
+          onClick={() => onToggleHighlight(pathKey)}
         >
           <button
             type="button"
-            onClick={() => onToggle(pathKey)}
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggle(pathKey);
+            }}
             disabled={!hasChildren}
             className="cash-flow-report__toggle-button"
             aria-label={
@@ -91,7 +101,15 @@ const renderCashFlowRows = (
           >
             {hasChildren ? (isCollapsed ? "+" : "−") : "\u00a0"}
           </button>
-          {node.name}
+          <span
+            className="balance-report-table__name-text"
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleHighlight(pathKey);
+            }}
+          >
+            {node.name}
+          </span>
         </td>
         <td
           className={`balance-report-table__value ${
@@ -124,7 +142,9 @@ const renderCashFlowRows = (
             comparisonMaps,
             collapsedPaths,
             onToggle,
-            onValueDoubleClick
+            onValueDoubleClick,
+            highlightedPaths,
+            onToggleHighlight
           )
         : [];
 
@@ -162,11 +182,24 @@ export default function CashFlowReport({
     error: "",
     title: "",
   });
+  const [highlightedRows, setHighlightedRows] = useState(new Set());
   const tableRef = useRef(null);
   const dragCleanup = useRef(() => {});
   const activePeriods = Array.isArray(periods)
     ? periods.slice(0, activeReports.length)
     : [];
+
+  const toggleRowHighlight = (pathKey) => {
+    setHighlightedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(pathKey)) {
+        next.delete(pathKey);
+      } else {
+        next.add(pathKey);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     return () => {
@@ -312,7 +345,9 @@ export default function CashFlowReport({
                   comparisonMaps,
                   collapsedPaths,
                   onTogglePath,
-                  handleValueDoubleClick
+                  handleValueDoubleClick,
+                  highlightedRows,
+                  toggleRowHighlight
                 )}
               </tbody>
             </table>

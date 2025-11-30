@@ -138,16 +138,7 @@ export default function CashFlowDateSelectorMonthYear({
       <aside className="balance-panel">
         <div className="balance-date-picker">
           <div className="balance-period-group">
-            <div className="balance-period-title">
-              <span className="balance-period-pill">1</span>
-              <div className="balance-period-heading">
-                <div className="balance-period-heading__subtitle">
-                  {`From ${normalizedFromDates[0] ?? ""} To ${
-                    normalizedToDates[0] ?? ""
-                  }`}
-                </div>
-              </div>
-            </div>
+            <div className="balance-period-title"></div>
             <label
               htmlFor="cashflow-from-month-1"
               className="balance-date-picker__label"

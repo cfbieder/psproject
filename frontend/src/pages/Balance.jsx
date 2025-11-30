@@ -61,7 +61,8 @@ export default function Balance() {
         activeDates.map((date) => Rest.fetchBalanceReport(date))
       );
       setBalanceReports(reports);
-      setCollapsedPaths(new Set());
+      const collapsiblePaths = collectCollapsiblePaths(reports[0]);
+      setCollapsedPaths(new Set(collapsiblePaths));
     } catch (error) {
       console.error("Failed to fetch balance report:", error);
       setReportError(error?.message ?? "Failed to fetch balance report");

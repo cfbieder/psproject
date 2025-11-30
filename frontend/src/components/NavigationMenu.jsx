@@ -10,8 +10,10 @@ const menuItems = [
       { label: "Refresh PS", path: "/refresh-ps" },
     ],
   },
-  { label: "Dashboard" },
-  { label: "History", path: "/history" },
+  {
+    label: "Budgeting",
+    submenu: [{ label: "Budget Worksheet", path: "/budget-worksheet" }],
+  },
   {
     label: "Reports",
     submenu: [
@@ -38,61 +40,61 @@ export default function NavigationMenu() {
     event.stopPropagation();
   };
 
+  const navLinksClassName = "navbar__links navbar__links--left";
   return (
     <header className="navbar">
       <div className="navbar__inner">
-        <Link className="navbar__brand" to="/">
-          <div className="navbar__brand-image">
-            <img src={banner} alt="Fin banner" />
-          </div>
-          <div className="navbar__brand-copy">
-            <p className="navbar__title">Fin Workspace</p>
-            <span className="navbar__subtitle">
-              Balance · Cash flow · PS data
-            </span>
-          </div>
-        </Link>
-        <nav className="navbar__links">
-          <Link className="navlink" to="/">
-            Home
+        <div className="navbar__left">
+          <Link className="navbar__brand" to="/">
+            <div className="navbar__brand-image">
+              <img src={banner} alt="Fin banner" />
+            </div>
+            <div className="navbar__brand-copy">
+              <p className="navbar__title">Fin Workspace</p>
+            </div>
           </Link>
-          {menuItems.map((item) =>
-            item.submenu ? (
-              <div key={item.label} className="dropdown">
-                <button
-                  type="button"
-                  className="navlink navlink--dropdown"
-                  onMouseDown={preventDropdownClick}
-                >
-                  <span>{item.label}</span>
-                  <span aria-hidden>▾</span>
-                </button>
-                <div className="dropdown__menu">
-                  {item.submenu.map((subItem) => (
-                    <Link
-                      key={subItem.label}
-                      className="dropdown__link"
-                      to={subItem.path}
-                    >
-                      {subItem.label}
-                      <span className="dropdown__arrow" aria-hidden>
-                        ↗
-                      </span>
-                    </Link>
-                  ))}
+          <nav className={navLinksClassName}>
+            <Link className="navlink" to="/">
+              Home
+            </Link>
+            {menuItems.map((item) =>
+              item.submenu ? (
+                <div key={item.label} className="dropdown">
+                  <button
+                    type="button"
+                    className="navlink navlink--dropdown"
+                    onMouseDown={preventDropdownClick}
+                  >
+                    <span>{item.label}</span>
+                    <span aria-hidden>▾</span>
+                  </button>
+                  <div className="dropdown__menu">
+                    {item.submenu.map((subItem) => (
+                      <Link
+                        key={subItem.label}
+                        className="dropdown__link"
+                        to={subItem.path}
+                      >
+                        {subItem.label}
+                        <span className="dropdown__arrow" aria-hidden>
+                          ↗
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ) : item.path ? (
-              <Link key={item.label} className="navlink" to={item.path}>
-                {item.label}
-              </Link>
-            ) : (
-              <span key={item.label} className="navlink navlink--static">
-                {item.label}
-              </span>
-            )
-          )}
-        </nav>
+              ) : item.path ? (
+                <Link key={item.label} className="navlink" to={item.path}>
+                  {item.label}
+                </Link>
+              ) : (
+                <span key={item.label} className="navlink navlink--static">
+                  {item.label}
+                </span>
+              )
+            )}
+          </nav>
+        </div>
       </div>
     </header>
   );
